@@ -1,0 +1,2198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#06040C">
+<title>صدفة — تعارف عشوائي بالفيديو</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23FF2E88' d='M12 1l2.4 7.2L22 12l-7.6 3.8L12 23l-2.4-7.2L2 12l7.6-3.8z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+    "@pixiv/three-vrm": "https://unpkg.com/@pixiv/three-vrm@2.1.0/lib/three-vrm.module.js"
+  }
+}
+</script>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#06040C; --bg2:#0B0817; --sur:#120E22; --sur2:#1A1430; --sur3:#221A3E;
+  --line:#2A2145; --line2:#3B2F63;
+  --txt:#F5F2FF; --mut:#A79FC6; --dim:#6F6791;
+  --vio:#7C3AED; --vio2:#A855F7; --mag:#FF2E88; --cyan:#22D3EE; --amber:#FFB020; --acid:#A3E635;
+  --ok:#34D399; --warn:#FFB020; --bad:#FF3B5C; --info:#38BDF8;
+  --gradBrand:linear-gradient(135deg,#7C3AED 0%,#FF2E88 58%,#FFB020 120%);
+  --gradCool:linear-gradient(135deg,#22D3EE,#7C3AED);
+  --gradDanger:linear-gradient(135deg,#FF3B5C,#C81E3E);
+  --r:18px; --barH:56px;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --safeT:env(safe-area-inset-top,0px); --safeB:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif; background:#030208; color:var(--txt);
+  overflow:hidden; overscroll-behavior:none;
+}
+::selection{background:#FF2E8855}
+h1,h2,h3,.disp{font-family:Cairo,"IBM Plex Sans Arabic",sans-serif}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,textarea{font-family:inherit;color:var(--txt)}
+svg.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.ic.fill{fill:currentColor;stroke:none}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:8px}
+
+/* ============ SCROLLBARS ============ */
+*{scrollbar-width:thin;scrollbar-color:#7C3AED #14102a}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#14102a;border-radius:99px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#7C3AED,#FF2E88);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#A855F7,#FF5CA8)}
+::-webkit-scrollbar-corner{background:transparent}
+
+/* ============ DESKTOP STAGE / PHONE FRAME ============ */
+.stage{height:100dvh;width:100%;position:relative}
+.deskBackdrop{display:none}
+.device{width:100%;height:100dvh;position:relative;background:var(--bg)}
+.deskNote{display:none}
+@media (min-width:769px){
+  .stage{display:flex;align-items:center;justify-content:center;gap:48px;padding:24px}
+  .deskBackdrop{display:block;position:fixed;inset:0;overflow:hidden;
+    background:radial-gradient(1200px 800px at 75% 15%,#1b1038 0%,transparent 60%),
+               radial-gradient(1000px 700px at 15% 85%,#2a0a24 0%,transparent 55%),#040309}
+  .deskBackdrop .blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;animation:blobFloat 16s ease-in-out infinite alternate}
+  .deskBackdrop .b1{width:480px;height:480px;background:#7C3AED;top:-120px;right:8%}
+  .deskBackdrop .b2{width:420px;height:420px;background:#FF2E88;bottom:-100px;left:10%;animation-delay:-6s}
+  .deskBackdrop .b3{width:300px;height:300px;background:#0e7490;top:40%;left:38%;animation-delay:-11s}
+  .deskBackdrop::after{content:"";position:absolute;inset:0;opacity:.07;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E")}
+  .device{width:400px;height:min(860px,94vh);flex:none;border-radius:52px;border:10px solid #1B1633;
+    box-shadow:0 0 0 2px #2A2145,0 40px 120px -20px #7C3AED66,0 20px 60px #000c,inset 0 0 0 2px #000;
+    overflow:hidden}
+  .device::after{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);width:112px;height:24px;
+    background:#1B1633;border-radius:99px;z-index:200;pointer-events:none}
+  .deskNote{display:flex;flex-direction:column;gap:18px;max-width:340px;position:relative;z-index:2}
+  .deskNote .logoBig{display:flex;align-items:center;gap:12px}
+  .deskNote .logoBig svg{width:44px;height:44px;color:var(--mag);filter:drop-shadow(0 0 14px #FF2E88aa)}
+  .deskNote h1{font-size:44px;font-weight:900;background:var(--gradBrand);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .deskNote p{color:var(--mut);line-height:1.9;font-size:15px}
+  .deskNote .pillRow{display:flex;flex-wrap:wrap;gap:8px}
+  .deskNote .pill{font-size:12px;padding:7px 12px;border-radius:99px;border:1px solid var(--line2);background:#120E22cc;color:var(--mut)}
+  .deskNote .phoneBadge{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--cyan);
+    border:1px solid #22D3EE44;background:#22D3EE12;padding:10px 16px;border-radius:14px;width:fit-content}
+}
+@keyframes blobFloat{from{transform:translate(0,0) scale(1)}to{transform:translate(50px,-40px) scale(1.15)}}
+
+/* ============ APP SHELL ============ */
+#app{position:absolute;inset:0;overflow:hidden;background:var(--bg)}
+.appBg{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.appBg .blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.32;animation:blobFloat 18s ease-in-out infinite alternate}
+.appBg .b1{width:300px;height:300px;background:#6d28d9;top:-90px;right:-60px}
+.appBg .b2{width:260px;height:260px;background:#be185d;bottom:-60px;left:-70px;animation-delay:-8s}
+.appBg .b3{width:180px;height:180px;background:#155e75;top:45%;left:-40px;animation-delay:-13s}
+.appBg::after{content:"";position:absolute;inset:0;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E")}
+
+/* top bar */
+.topbar{position:absolute;top:0;left:0;right:0;height:calc(var(--barH) + var(--safeT));padding:var(--safeT) 14px 0;
+  display:flex;align-items:center;justify-content:space-between;z-index:90;
+  background:linear-gradient(180deg,#06040Ce6 0%,#06040C99 60%,transparent);pointer-events:none}
+.topbar>*{pointer-events:auto}
+.tbRight{display:flex;align-items:center;gap:10px}
+.brand{display:flex;align-items:center;gap:7px;font-family:Cairo;font-weight:900;font-size:19px}
+.brand svg{width:20px;height:20px;color:var(--mag);filter:drop-shadow(0 0 8px #FF2E88cc);animation:sparkSpin 9s linear infinite}
+@keyframes sparkSpin{0%,70%{transform:rotate(0) scale(1)}80%{transform:rotate(180deg) scale(1.2)}100%{transform:rotate(360deg) scale(1)}}
+.onlinePill{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--mut);
+  background:#120E22cc;border:1px solid var(--line);padding:5px 10px;border-radius:99px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.onlinePill .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.sndBtn{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;color:var(--txt);
+  background:#120E22cc;border:1px solid var(--line);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:.2s}
+.sndBtn:active{transform:scale(.9)}
+.sndBtn.muted{color:var(--dim)}
+.sndBtn .eq{display:flex;gap:2px;align-items:flex-end;height:12px;margin-inline-start:2px}
+.sndBtn .eq i{width:2.5px;background:var(--cyan);border-radius:2px;animation:eq 1s ease-in-out infinite}
+.sndBtn .eq i:nth-child(1){height:6px}.sndBtn .eq i:nth-child(2){height:12px;animation-delay:-.3s}.sndBtn .eq i:nth-child(3){height:8px;animation-delay:-.6s}
+.sndBtn.muted .eq i{animation:none;height:3px;background:var(--dim)}
+@keyframes eq{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
+
+/* screens */
+.screen{position:absolute;inset:0;padding:calc(var(--barH) + var(--safeT) + 8px) 18px calc(14px + var(--safeB));
+  display:flex;flex-direction:column;opacity:0;visibility:hidden;transform:translateY(18px);
+  transition:opacity .35s var(--ease),transform .35s var(--ease),visibility .35s;z-index:1;overflow-y:auto;overflow-x:hidden}
+.screen.active{opacity:1;visibility:visible;transform:none;z-index:5}
+.screen.noPad{padding:0;overflow:hidden}
+.stag{opacity:0;transform:translateY(16px)}
+.screen.active .stag{animation:fadeUp .55s var(--ease) forwards;animation-delay:calc(var(--i,0)*80ms)}
+@keyframes fadeUp{to{opacity:1;transform:none}}
+
+/* ============ SHARED CONTROLS ============ */
+.btn{display:flex;align-items:center;justify-content:center;gap:9px;font-weight:800;font-family:Cairo;
+  border-radius:16px;padding:15px 20px;font-size:16px;transition:transform .15s var(--ease),box-shadow .2s,filter .2s;position:relative}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:var(--gradBrand);color:#fff;box-shadow:0 8px 28px -6px #FF2E8866,0 4px 16px #7C3AED55}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.primary:disabled{filter:grayscale(.7) brightness(.55);box-shadow:none;cursor:not-allowed}
+.btn.cool{background:var(--gradCool);color:#04121a;box-shadow:0 8px 24px -8px #22D3EE66}
+.btn.ghost{background:var(--sur2);border:1px solid var(--line2);color:var(--txt)}
+.btn.danger{background:var(--gradDanger);color:#fff;box-shadow:0 8px 24px -8px #FF3B5C88}
+.btn.sm{padding:10px 14px;font-size:13.5px;border-radius:12px}
+.btn .ic{width:19px;height:19px}
+
+.chip{padding:9px 14px;border-radius:99px;font-size:13px;font-weight:600;color:var(--mut);
+  background:var(--sur);border:1px solid var(--line);transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.chip:active{transform:scale(.94)}
+.chip.on{color:#fff;border-color:transparent;background:linear-gradient(var(--sur3),var(--sur3)) padding-box,var(--gradCool) border-box;border:1.5px solid transparent;box-shadow:0 0 14px #22D3EE33}
+.chipRow{display:flex;flex-wrap:wrap;gap:8px}
+
+.switch{width:48px;height:28px;border-radius:99px;background:var(--sur3);border:1px solid var(--line2);position:relative;transition:.25s;flex:none}
+.switch::after{content:"";position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:var(--dim);transition:.25s var(--ease)}
+.switch.on{background:linear-gradient(135deg,#7C3AED,#FF2E88);border-color:transparent;box-shadow:0 0 14px #FF2E8855}
+.switch.on::after{right:23px;background:#fff}
+
+.card{background:linear-gradient(160deg,#161028ee,#0F0B1dee);border:1px solid var(--line);border-radius:var(--r);padding:16px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.lbl{font-size:12.5px;font-weight:700;color:var(--mut);letter-spacing:.2px}
+.hint{font-size:12px;color:var(--dim);line-height:1.8}
+
+input[type=text]{width:100%;background:var(--sur);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;font-size:15px;transition:.2s;color:var(--txt)}
+input[type=text]:focus{outline:none;border-color:var(--vio2);box-shadow:0 0 0 3px #7C3AED33}
+input[type=text]::placeholder{color:var(--dim)}
+
+/* range */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;background:var(--sur3);outline:none;direction:ltr}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:linear-gradient(135deg,#A855F7,#FF2E88);border:2.5px solid #0B0817;box-shadow:0 0 10px #FF2E8888;cursor:pointer;transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#A855F7,#FF2E88);border:2.5px solid #0B0817;box-shadow:0 0 10px #FF2E8888;cursor:pointer}
+
+/* ============ HOME ============ */
+#scrHome{gap:16px}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding-top:14px}
+.heroLogo{width:76px;height:76px;border-radius:26px;display:grid;place-items:center;position:relative;
+  background:linear-gradient(160deg,#1A1430,#0F0B1D);border:1px solid var(--line2);box-shadow:0 0 40px #7C3AED44,inset 0 0 24px #7C3AED22}
+.heroLogo svg{width:40px;height:40px;color:var(--mag);filter:drop-shadow(0 0 12px #FF2E88);animation:heroSpark 5s ease-in-out infinite}
+.heroLogo::after{content:"";position:absolute;inset:-8px;border-radius:32px;border:1px dashed #FF2E8844;animation:sparkSpin 22s linear infinite}
+@keyframes heroSpark{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.14) rotate(12deg)}}
+.hero h1{font-size:31px;font-weight:900;line-height:1.35}
+.hero h1 em{font-style:normal;background:var(--gradBrand);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--mut);font-size:13.5px;line-height:1.9;max-width:300px}
+.ticker{overflow:hidden;border:1px solid var(--line);background:#0F0B1Daa;border-radius:12px;padding:9px 12px;font-size:12px;color:var(--mut);display:flex;align-items:center;gap:8px;min-height:36px}
+.ticker .ic{width:14px;height:14px;color:var(--amber)}
+.ticker span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .4s}
+.formCard{display:flex;flex-direction:column;gap:13px}
+.adultRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 2px}
+.adultRow .t{font-size:13.5px;font-weight:600}
+.adultRow .t small{display:block;color:var(--dim);font-weight:400;font-size:11px;margin-top:2px}
+.homeFoot{margin-top:auto;text-align:center;font-size:11px;color:var(--dim);display:flex;align-items:center;justify-content:center;gap:6px;padding-top:6px}
+.homeFoot .ic{width:13px;height:13px;color:var(--ok)}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(6px)}75%{transform:translateX(-6px)}}
+
+/* ============ PERMS ============ */
+#scrPerms{gap:14px}
+.scrHead{display:flex;align-items:center;gap:10px}
+.scrHead .back{width:38px;height:38px;border-radius:12px;background:var(--sur2);border:1px solid var(--line2);display:grid;place-items:center;color:var(--mut)}
+.scrHead h2{font-size:21px;font-weight:900}
+.scrHead p{font-size:12px;color:var(--dim)}
+.permCard{display:flex;align-items:center;gap:13px}
+.permIco{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;flex:none;background:var(--sur3);color:var(--vio2);border:1px solid var(--line2)}
+.permCard .info{flex:1}
+.permCard .info b{font-size:14.5px;display:block}
+.permCard .info small{color:var(--dim);font-size:11.5px;line-height:1.7;display:block;margin-top:2px}
+.permSt{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--sur3);color:var(--dim);font-size:13px}
+.permSt.ok{background:#34D39922;color:var(--ok);box-shadow:0 0 12px #34D39944}
+.permSt.no{background:#FF3B5C22;color:var(--bad)}
+.privacyNote{display:flex;gap:11px;align-items:flex-start;border:1px solid #34D39933;background:linear-gradient(160deg,#0d1f1a,#0F0B1D);border-radius:16px;padding:13px 14px}
+.privacyNote .ic{color:var(--ok);width:20px;height:20px;margin-top:2px}
+.privacyNote p{font-size:12.5px;line-height:1.9;color:#c9efe2}
+.privacyNote b{color:var(--ok)}
+.permPreview{display:none;gap:12px;align-items:center}
+.permPreview.show{display:flex}
+.permPreview video{width:104px;height:132px;object-fit:cover;border-radius:14px;transform:scaleX(-1);border:1px solid var(--line2);background:#000;flex:none}
+.meterWrap{flex:1}
+.meter{display:flex;gap:3.5px;align-items:flex-end;height:44px;margin-top:8px}
+.meter i{flex:1;background:var(--gradCool);border-radius:3px;height:12%;transition:height .08s;min-height:3px;opacity:.9}
+.permBtns{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.skipLink{align-self:center;font-size:12.5px;color:var(--dim);text-decoration:underline;text-underline-offset:4px;padding:6px}
+
+/* ============ STUDIO ============ */
+#scrStudio{gap:10px;padding-inline:14px}
+.stageWrap{position:relative;flex:1;min-height:230px;border-radius:22px;overflow:hidden;background:#000;
+  border:1px solid var(--line2);box-shadow:0 12px 40px -12px #7C3AED44,inset 0 0 0 1px #000;touch-action:none}
+#outCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#glCanvas{position:absolute;inset:0;width:100%;height:100%;visibility:hidden;pointer-events:none}
+.stageTop{position:absolute;top:10px;right:10px;left:10px;display:flex;justify-content:space-between;align-items:flex-start;z-index:4;pointer-events:none}
+.liveChip{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;background:#000000a8;border:1px solid var(--line2);padding:5px 10px;border-radius:99px;color:var(--mut);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.liveChip .dot{width:6px;height:6px;border-radius:50%;background:var(--bad);box-shadow:0 0 8px var(--bad);animation:pulse 1.4s infinite}
+.trackChip{font-size:10.5px;font-weight:700;padding:5px 10px;border-radius:99px;border:1px solid var(--line2);background:#000000a8;color:var(--dim);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;gap:5px;align-items:center}
+.trackChip.ok{color:var(--ok);border-color:#34D39944}
+.trackChip.load{color:var(--amber);border-color:#FFB02044}
+.trackChip.load .sp{width:9px;height:9px;border:2px solid #FFB02055;border-top-color:var(--amber);border-radius:50%;animation:spin 1s linear infinite}
+.trackChip.info{color:var(--info);border-color:#38BDF844}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dragHint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10.5px;color:#ffffff88;background:#000000a8;padding:5px 12px;border-radius:99px;border:1px solid #ffffff1c;z-index:4;pointer-events:none;transition:opacity .5s;white-space:nowrap}
+.stageLoad{position:absolute;inset:0;background:#000000d9;z-index:6;display:none;flex-direction:column;gap:14px;align-items:center;justify-content:center}
+.stageLoad.show{display:flex}
+.stageLoad .sp{width:42px;height:42px;border:3px solid #7C3AED44;border-top-color:var(--mag);border-radius:50%;animation:spin .9s linear infinite}
+.stageLoad p{font-size:13px;color:var(--mut)}
+.vrmRow{display:flex;gap:8px}
+.vrmRow .btn{flex:1;padding:12px 10px;font-size:13.5px}
+.vrmHint{font-size:11px;color:var(--dim);text-align:center;line-height:1.7}
+.vrmHint a{color:var(--cyan);text-decoration:none;font-weight:700}
+.vrmChip{display:none;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--cyan);background:#22D3EE14;border:1px solid #22D3EE44;padding:8px 12px;border-radius:12px}
+.vrmChip.show{display:flex}
+.vrmChip .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;text-align:right}
+.vrmChip button{color:var(--bad);display:grid;place-items:center}
+.personaRow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.persona{flex:none;display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:99px;background:var(--sur);border:1.5px solid var(--line);font-size:12.5px;font-weight:700;color:var(--mut);transition:.2s}
+.persona canvas{width:34px;height:34px;border-radius:50%;background:#000;flex:none}
+.persona.on{color:#fff;border-color:var(--vio2);box-shadow:0 0 14px #7C3AED55;background:var(--sur3)}
+.deck{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}
+.deckCard{flex:none;width:150px;scroll-snap-align:start;background:linear-gradient(165deg,#171129,#0F0B1D);border:1px solid var(--line);border-radius:15px;padding:11px 12px;display:flex;flex-direction:column;gap:9px}
+.deckCard .top{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:700;color:var(--mut)}
+.deckCard .top .val{color:var(--cyan);font-size:11px;font-weight:600;direction:ltr}
+.deckCard .top .ic{width:14px;height:14px;color:var(--vio2)}
+.deckCard .top .lft{display:flex;gap:5px;align-items:center}
+.swRow{display:flex;gap:6px}
+.sw{flex:1;height:26px;border-radius:9px;border:1.5px solid transparent;position:relative;transition:.2s}
+.sw.on{border-color:#fff;box-shadow:0 0 10px currentColor;transform:scale(1.06)}
+.sw.on::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:900;text-shadow:0 1px 3px #000}
+.tglRow{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;font-weight:700;color:var(--mut)}
+.tglRow .switch{width:38px;height:22px}
+.tglRow .switch::after{width:16px;height:16px}
+.tglRow .switch.on::after{right:17px}
+.actBtn{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:var(--txt);background:var(--sur3);border:1px solid var(--line2);border-radius:10px;padding:8px 10px;transition:.15s;width:100%}
+.actBtn:active{transform:scale(.95)}
+.actBtn .ic{width:14px;height:14px;color:var(--amber)}
+.deckCard.acts{gap:6px}
+
+/* ============ LOBBY ============ */
+#scrLobby{gap:13px}
+.readyHead{text-align:center}
+.readyHead h2{font-size:24px;font-weight:900}
+.readyHead h2 em{font-style:normal;background:var(--gradCool);-webkit-background-clip:text;background-clip:text;color:transparent}
+.readyHead p{font-size:12.5px;color:var(--mut);margin-top:3px}
+.lobbyPreview{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line2);background:#000;aspect-ratio:4/4.4;max-height:330px;width:100%;box-shadow:0 14px 44px -14px #22D3EE33}
+.lobbyPreview video{width:100%;height:100%;object-fit:cover;display:block}
+.lobbyPreview .stageTop{top:10px}
+.checkList{display:flex;flex-direction:column;gap:9px}
+.checkItem{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600}
+.checkItem .ic{width:17px;height:17px;color:var(--ok)}
+.checkItem .ic.off{color:var(--dim)}
+.checkItem small{margin-inline-start:auto;color:var(--dim);font-weight:400;font-size:11px}
+.lobbyToggles{display:flex;gap:10px}
+.ltCard{flex:1;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 14px}
+.ltCard .lft{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:700}
+.ltCard .lft .ic{width:18px;height:18px;color:var(--vio2)}
+.ltCard.off .lft .ic{color:var(--dim)}
+
+/* ============ MATCH ============ */
+#scrMatch{align-items:center;justify-content:center;gap:0}
+.radar{position:relative;width:250px;height:250px;display:grid;place-items:center;margin-bottom:26px}
+.radar .ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid #7C3AED55;animation:ringOut 2.6s var(--ease) infinite}
+.radar .ring:nth-child(2){animation-delay:.85s;border-color:#FF2E8855}
+.radar .ring:nth-child(3){animation-delay:1.7s;border-color:#22D3EE55}
+@keyframes ringOut{from{transform:scale(.42);opacity:1}to{transform:scale(1.25);opacity:0}}
+.radar .sweep{position:absolute;inset:14px;border-radius:50%;background:conic-gradient(from 0deg,#22D3EE55,transparent 70deg);animation:spin 2.4s linear infinite;
+  -webkit-mask:radial-gradient(circle,transparent 34%,#000 35%);mask:radial-gradient(circle,transparent 34%,#000 35%)}
+.radar .orbit{position:absolute;inset:0;animation:spin 7s linear infinite}
+.radar .orbit i{position:absolute;width:9px;height:9px;border-radius:50%;box-shadow:0 0 10px currentColor}
+.radar .orbit i:nth-child(1){top:6px;left:50%;background:var(--mag);color:var(--mag)}
+.radar .orbit i:nth-child(2){bottom:22px;right:16px;background:var(--cyan);color:var(--cyan)}
+.radar .orbit i:nth-child(3){bottom:30px;left:12px;background:var(--amber);color:var(--amber)}
+.myBubble{width:128px;height:128px;border-radius:50%;overflow:hidden;border:3px solid transparent;
+  background:linear-gradient(#000,#000) padding-box,var(--gradBrand) border-box;box-shadow:0 0 44px #FF2E8866;position:relative;z-index:2}
+.myBubble video{width:100%;height:100%;object-fit:cover}
+.matchStatus{font-family:Cairo;font-size:19px;font-weight:800;text-align:center;min-height:30px}
+.matchSub{font-size:12px;color:var(--dim);margin-top:6px;text-align:center;line-height:1.8}
+.matchTime{margin-top:14px;font-size:13px;color:var(--cyan);font-weight:700;direction:ltr;background:#22D3EE12;border:1px solid #22D3EE33;padding:6px 16px;border-radius:99px}
+#matchCancel{margin-top:26px}
+.matchFlash{position:absolute;inset:0;background:radial-gradient(circle,#FF2E8833,#06040Cf2 70%);z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.matchFlash.show{display:flex;animation:flashIn .3s}
+.matchFlash .big{font-size:56px;animation:popIn .5s var(--ease)}
+.matchFlash h3{font-size:26px;font-weight:900;background:var(--gradBrand);-webkit-background-clip:text;background-clip:text;color:transparent}
+@keyframes flashIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ============ CALL ============ */
+#scrCall{background:#000}
+#bigVid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+.callScrimT{position:absolute;top:0;left:0;right:0;height:170px;background:linear-gradient(180deg,#06040Cd9,transparent);z-index:2;pointer-events:none}
+.callScrimB{position:absolute;bottom:0;left:0;right:0;height:190px;background:linear-gradient(0deg,#06040Cd9,transparent);z-index:2;pointer-events:none}
+.partnerCard{position:absolute;top:calc(var(--barH) + var(--safeT) + 4px);right:14px;left:14px;z-index:6;display:flex;align-items:center;gap:10px;transition:opacity .3s}
+.pAvatar{width:42px;height:42px;border-radius:14px;flex:none;border:1.5px solid var(--line2);background:#000;overflow:hidden}
+.pAvatar canvas{width:100%;height:100%}
+.pInfo{flex:1;min-width:0}
+.pInfo .nm{font-family:Cairo;font-weight:800;font-size:15.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pInfo .nm .badge{font-size:9px;font-weight:700;padding:2.5px 7px;border-radius:99px;background:#FFB02022;color:var(--amber);border:1px solid #FFB02044;font-family:"IBM Plex Sans Arabic"}
+.pInfo .meta{font-size:11px;color:var(--mut);display:flex;gap:6px;align-items:center;margin-top:2px;flex-wrap:wrap}
+.pInfo .meta .shared{color:var(--acid);font-weight:700}
+.pRight{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.connBars{display:flex;gap:2.5px;align-items:flex-end;height:14px}
+.connBars i{width:3.5px;border-radius:2px;background:var(--ok);box-shadow:0 0 6px #34D39966}
+.connBars i:nth-child(1){height:5px}.connBars i:nth-child(2){height:8px}.connBars i:nth-child(3){height:11px}.connBars i:nth-child(4){height:14px}
+.connBars.mid i:nth-child(4){background:var(--sur3);box-shadow:none}
+.connBars.low i:nth-child(3),.connBars.low i:nth-child(4){background:var(--sur3);box-shadow:none}
+.connBars.low i:nth-child(1),.connBars.low i:nth-child(2){background:var(--warn)}
+.pMicSt{display:flex;align-items:center;gap:6px}
+.pMicSt .ic{width:14px;height:14px;color:var(--ok)}
+.pMicSt.off .ic{color:var(--bad)}
+.wave{display:flex;gap:2px;align-items:center;height:14px}
+.wave i{width:2.5px;height:14px;border-radius:2px;background:var(--cyan);transform:scaleY(calc(.15 + var(--lv,0)*.85));transition:transform .09s;box-shadow:0 0 5px #22D3EE88}
+.callTimer{position:absolute;top:calc(var(--barH) + var(--safeT) + 56px);right:16px;z-index:6;font-size:11.5px;font-weight:700;color:var(--txt);direction:ltr;
+  background:#000000a8;border:1px solid var(--line2);padding:4px 11px;border-radius:99px;display:flex;gap:6px;align-items:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.callTimer .dot{width:6px;height:6px;border-radius:50%;background:var(--bad);animation:pulse 1.4s infinite}
+.selfChip{position:absolute;top:calc(var(--barH) + var(--safeT) + 8px);right:16px;z-index:6;display:none;font-size:12px;font-weight:700;background:#000000a8;border:1px solid var(--line2);padding:6px 13px;border-radius:99px;color:var(--cyan)}
+#scrCall.selfBig .partnerCard,#scrCall.selfBig .callTimer{opacity:0;pointer-events:none}
+#scrCall.selfBig .selfChip{display:block}
+.pip{position:absolute;z-index:8;width:106px;height:146px;border-radius:16px;overflow:hidden;border:2px solid transparent;
+  background:linear-gradient(#000,#000) padding-box,var(--gradCool) border-box;box-shadow:0 10px 30px #000b,0 0 20px #22D3EE33;
+  touch-action:none;cursor:grab;left:14px;top:calc(var(--barH) + var(--safeT) + 90px)}
+.pip.snap{transition:left .35s var(--ease),top .35s var(--ease)}
+.pip video{width:100%;height:100%;object-fit:cover;pointer-events:none}
+.pip .tag{position:absolute;bottom:5px;right:6px;font-size:9px;font-weight:700;background:#000000b0;padding:2.5px 8px;border-radius:99px;color:var(--cyan);pointer-events:none}
+.callCtrls{position:absolute;bottom:calc(16px + var(--safeB));left:0;right:0;z-index:10;display:flex;justify-content:center;gap:13px;padding:0 14px}
+.cBtn{display:flex;flex-direction:column;align-items:center;gap:5px}
+.cBtn .cir{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:#1A1430e6;border:1px solid var(--line2);color:var(--txt);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:.2s var(--ease);position:relative}
+.cBtn:active .cir{transform:scale(.88)}
+.cBtn small{font-size:9.5px;color:var(--mut);font-weight:600}
+.cBtn.off .cir{background:#FF3B5C26;border-color:#FF3B5C66;color:var(--bad)}
+.cBtn.end .cir{width:62px;height:62px;background:var(--gradDanger);border:none;box-shadow:0 8px 26px #FF3B5C66}
+.cBtn.end .cir .ic{transform:rotate(135deg)}
+.cBtn.next .cir{background:linear-gradient(135deg,#7C3AED,#22D3EE);border:none;color:#fff;box-shadow:0 8px 22px #7C3AED55}
+.cBtn .bdg{position:absolute;top:-3px;right:-3px;min-width:19px;height:19px;border-radius:99px;background:var(--mag);color:#fff;font-size:10px;font-weight:800;display:none;place-items:center;padding:0 5px;box-shadow:0 0 10px #FF2E88;border:2px solid #06040C}
+.cBtn .bdg.show{display:grid}
+.heartsLayer{position:absolute;inset:0;z-index:9;pointer-events:none;overflow:hidden}
+.fHeart{position:absolute;font-size:26px;animation:heartRise 1.7s ease-out forwards;filter:drop-shadow(0 0 8px #FF2E88aa)}
+@keyframes heartRise{0%{transform:translate(0,0) scale(.4);opacity:0}12%{opacity:1;transform:translate(calc(var(--sx)*.3),-30px) scale(1.15)}100%{transform:translate(var(--sx),-260px) scale(.8) rotate(var(--rr));opacity:0}}
+.coach{position:absolute;bottom:calc(108px + var(--safeB));left:50%;transform:translateX(-50%);z-index:9;font-size:11.5px;font-weight:700;
+  background:#000000c0;border:1px solid #FF2E8855;color:#ffc4dd;padding:8px 15px;border-radius:99px;white-space:nowrap;animation:pulse 2.4s infinite;pointer-events:none;transition:opacity .5s}
+.audioEnable{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:30;display:none}
+.audioEnable.show{display:block}
+
+/* chat sheet */
+.chatSheet{position:absolute;left:0;right:0;bottom:0;height:58%;z-index:25;background:linear-gradient(180deg,#161028f5,#0B0817fa);
+  border-top:1px solid var(--line2);border-radius:24px 24px 0 0;transform:translateY(105%);transition:transform .4s var(--ease);
+  display:flex;flex-direction:column;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 -18px 50px #000a}
+.chatSheet.open{transform:none}
+.chatHead{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 9px;border-bottom:1px solid var(--line)}
+.chatHead b{font-family:Cairo;font-size:15px}
+.chatHead .x{width:32px;height:32px;border-radius:10px;background:var(--sur3);display:grid;place-items:center;color:var(--mut)}
+.chatList{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:78%;padding:9px 13px;border-radius:16px;font-size:13.5px;line-height:1.7;animation:msgIn .3s var(--ease);word-break:break-word}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
+.msg.them{align-self:flex-start;background:var(--sur3);border:1px solid var(--line2);border-top-right-radius:5px}
+.msg.me{align-self:flex-end;background:linear-gradient(135deg,#7C3AED,#c026a3);border-top-left-radius:5px;color:#fff;box-shadow:0 4px 14px #7C3AED44}
+.msg.sys{align-self:center;background:none;border:none;color:var(--dim);font-size:11px;text-align:center;padding:3px}
+.msg.sys .ic{width:12px;height:12px;color:var(--ok);vertical-align:-2px}
+.typing{align-self:flex-start;display:none;gap:4px;padding:11px 15px;background:var(--sur3);border:1px solid var(--line2);border-radius:16px;border-top-right-radius:5px}
+.typing.show{display:flex}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--mut);animation:typDot 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+@keyframes typDot{0%,60%,100%{transform:none;opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+.quickRow{display:flex;gap:6px;padding:7px 14px 0}
+.quickRow button{font-size:17px;width:36px;height:36px;border-radius:11px;background:var(--sur3);border:1px solid var(--line);transition:.15s}
+.quickRow button:active{transform:scale(1.2)}
+.chatInputRow{display:flex;gap:8px;padding:9px 14px calc(12px + var(--safeB))}
+.chatInputRow input{flex:1;padding:12px 15px;font-size:14px}
+.sendBtn{width:47px;height:47px;border-radius:14px;background:var(--gradBrand);display:grid;place-items:center;color:#fff;flex:none;box-shadow:0 6px 18px #FF2E8855;transition:.15s}
+.sendBtn:active{transform:scale(.9)}
+.sendBtn .ic{width:19px;height:19px;transform:scaleX(-1)}
+
+/* ============ AFTER ============ */
+#scrAfter{gap:14px;align-items:center;text-align:center}
+.afterIco{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(160deg,#1A1430,#0F0B1D);border:1px solid var(--line2);box-shadow:0 0 34px #7C3AED44;margin-top:12px}
+.afterIco .ic{width:32px;height:32px;color:var(--mag)}
+#afterTitle{font-size:25px;font-weight:900}
+#afterNote{font-size:12.5px;color:var(--mut);line-height:1.8;max-width:280px}
+.afterCard{width:100%;display:flex;align-items:center;gap:12px;text-align:right}
+.afterCard .pAvatar{width:52px;height:52px;border-radius:16px}
+.afterCard .info{flex:1}
+.afterCard .info b{font-family:Cairo;font-size:16px}
+.afterCard .info small{display:block;color:var(--dim);font-size:11.5px;margin-top:2px}
+.afterDur{direction:ltr;font-weight:800;color:var(--cyan);font-size:15px;background:#22D3EE12;border:1px solid #22D3EE33;padding:7px 13px;border-radius:12px}
+.rateRow{display:flex;gap:12px;justify-content:center}
+.rateBtn{width:64px;height:64px;border-radius:20px;font-size:28px;background:var(--sur);border:1.5px solid var(--line);transition:.2s var(--ease)}
+.rateBtn:active{transform:scale(.9)}
+.rateBtn.on{border-color:var(--amber);background:#FFB02015;box-shadow:0 0 20px #FFB02044;transform:scale(1.08)}
+.statsRow{display:flex;gap:9px;width:100%}
+.stat{flex:1;background:var(--sur);border:1px solid var(--line);border-radius:14px;padding:11px 6px;text-align:center}
+.stat b{display:block;font-family:Cairo;font-size:19px;background:var(--gradCool);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat small{font-size:10px;color:var(--dim)}
+.afterBtns{width:100%;display:flex;flex-direction:column;gap:9px;margin-top:auto}
+.reportLink{font-size:11.5px;color:var(--dim);display:flex;align-items:center;gap:5px;justify-content:center;padding:5px}
+.reportLink .ic{width:13px;height:13px}
+
+/* sheets & toasts */
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:60;background:linear-gradient(180deg,#1A1430,#0B0817);border-top:1px solid var(--line2);
+  border-radius:24px 24px 0 0;padding:18px 18px calc(18px + var(--safeB));transform:translateY(105%);transition:transform .4s var(--ease);box-shadow:0 -18px 50px #000c}
+.sheet.open{transform:none}
+.sheet h3{font-size:17px;margin-bottom:4px}
+.sheet .sub{font-size:12px;color:var(--dim);margin-bottom:13px}
+.scrim{position:absolute;inset:0;background:#030208b0;z-index:55;opacity:0;visibility:hidden;transition:.3s;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.scrim.show{opacity:1;visibility:visible}
+#toasts{position:absolute;top:calc(var(--barH) + var(--safeT) + 6px);left:14px;right:14px;z-index:120;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:9px;background:#161028f2;border:1px solid var(--line2);border-radius:14px;padding:11px 14px;font-size:12.5px;font-weight:600;
+  box-shadow:0 10px 30px #000a;animation:toastIn .35s var(--ease);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.toast.out{animation:toastOut .3s forwards}
+.toast .ic{width:17px;height:17px}
+.toast.ok{border-color:#34D39955}.toast.ok .ic{color:var(--ok)}
+.toast.warn{border-color:#FFB02055}.toast.warn .ic{color:var(--warn)}
+.toast.bad{border-color:#FF3B5C55}.toast.bad .ic{color:var(--bad)}
+.toast.info .ic{color:var(--info)}
+@keyframes toastIn{from{opacity:0;transform:translateY(-14px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(-10px) scale(.95)}}
+
+#camFeed{position:fixed;width:2px;height:2px;opacity:0;pointer-events:none;left:-10px;top:-10px}
+#rotateOverlay{position:fixed;inset:0;z-index:999;background:#06040Cf5;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px}
+#rotateOverlay .ph{font-size:46px;animation:rotPh 2s ease-in-out infinite}
+@keyframes rotPh{0%,100%{transform:rotate(90deg)}50%{transform:rotate(0)}}
+#rotateOverlay p{font-family:Cairo;font-weight:800;font-size:18px}
+@media (max-height:460px) and (pointer:coarse) and (min-width:600px){#rotateOverlay{display:flex}}
+@media (prefers-reduced-motion:reduce){
+  .appBg .blob,.deskBackdrop .blob,.radar .sweep,.radar .orbit,.heroLogo svg,.brand svg{animation:none !important}
+}
+@media (max-height:700px){
+  .hero{padding-top:2px;gap:6px}.heroLogo{width:60px;height:60px}.hero h1{font-size:25px}
+  .lobbyPreview{max-height:240px}
+}
+</style>
+</head>
+<body>
+
+<!-- ======= SVG ICONS ======= -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 1l2.4 7.2L22 12l-7.6 3.8L12 23l-2.4-7.2L2 12l7.6-3.8z"/></symbol>
+    <symbol id="i-vol" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/></symbol>
+    <symbol id="i-volx" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0014 0v-1M12 18v4"/></symbol>
+    <symbol id="i-micx" viewBox="0 0 24 24"><path d="M9 5a3 3 0 016 0v5a3 3 0 01-.5 1.7M9 9v1a3 3 0 004.6 2.5M5 10v1a7 7 0 0011.4 5.4M19 10v1a7 7 0 01-.6 2.8M12 18v4"/><path d="M3 3l18 18"/></symbol>
+    <symbol id="i-cam" viewBox="0 0 24 24"><rect x="2" y="6" width="13" height="12" rx="3"/><path d="M15 10.5l7-3.5v10l-7-3.5"/></symbol>
+    <symbol id="i-camx" viewBox="0 0 24 24"><path d="M8 6h4a3 3 0 013 3v1.5l7-3.5v10l-4-2M15 15v0a3 3 0 01-3 3H5a3 3 0 01-3-3V9a3 3 0 011.5-2.6"/><path d="M3 3l18 18"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.13.96.36 1.9.7 2.8a2 2 0 01-.45 2.1L8.1 9.9a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.45c.9.34 1.84.57 2.8.7A2 2 0 0122 16.9z"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8V4z"/><path d="M19 5v14"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 01-8.5 8.4 8.6 8.6 0 01-3.8-.86L3 21l1.96-5.7a8.4 8.4 0 1116.04-3.8z"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.4" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M3.5 15a9 9 0 102.1-9.4L1 10"/></symbol>
+    <symbol id="i-dl" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><path d="M16 3l4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16"/></symbol>
+    <symbol id="i-zoom" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6M11 8v6"/></symbol>
+    <symbol id="i-scale" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></symbol>
+    <symbol id="i-glow" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></symbol>
+    <symbol id="i-parts" viewBox="0 0 24 24"><circle cx="6" cy="6" r="1.6"/><circle cx="18" cy="8" r="1.2"/><circle cx="9" cy="16" r="1.4"/><circle cx="17" cy="18" r="1.8"/><circle cx="13" cy="10" r="1"/></symbol>
+    <symbol id="i-face" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></symbol>
+    <symbol id="i-wave" viewBox="0 0 24 24"><path d="M2 12h3l3-8 4 16 3-8h7"/></symbol>
+    <symbol id="i-idle" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9"/><path d="M17 3l4 4-4 4"/></symbol>
+    <symbol id="i-pal" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1110-10c0 2.2-1.8 3-3 3h-2.5a2.5 2.5 0 00-1.8 4.3c.6.6.3 2.7-2.7 2.7z"/><circle cx="7.5" cy="11.5" r="1.2"/><circle cx="11" cy="7.5" r="1.2"/><circle cx="16" cy="8.5" r="1.2"/></symbol>
+    <symbol id="i-block" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M5 5l14 14"/></symbol>
+    <symbol id="i-phone2" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></symbol>
+  </defs>
+</svg>
+
+<div class="deskBackdrop"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i></div>
+
+<div class="stage">
+  <div class="deskNote">
+    <div class="logoBig"><svg class="ic fill"><use href="#i-spark"/></svg><h1>صدفة</h1></div>
+    <span class="phoneBadge"><svg class="ic" style="width:17px;height:17px"><use href="#i-phone2"/></svg> مصمّم للجوال فقط — هذه معاينة حيّة داخل إطار الجهاز</span>
+    <p>تعارف عشوائي بالفيديو، لكن بلمسة مختلفة: كاميرتك تبقى على جهازك لتتبّع وجهك فقط، والذي يراه الطرف الآخر هو <b style="color:var(--cyan)">شخصيتك الافتراضية</b> على خلفية سوداء — تتحرك مثلك وتُرسل تلقائياً قبل بدء المكالمة.</p>
+    <p>أضف شخصيتك بصيغة <b style="color:var(--mag)">VRM.</b> من VRoid Hub، أو ابدأ بإحدى الشخصيات المدمجة. افتح تبويبين للتجربة لتتصال بمكالمة حقيقية بين التبويبات.</p>
+    <div class="pillRow">
+      <span class="pill">🎭 تتبّع وجه حي</span><span class="pill">🖤 خلفية سوداء</span><span class="pill">🔒 كاميرتك خاصة</span><span class="pill">⚡ WebRTC</span>
+    </div>
+  </div>
+
+  <div class="device">
+    <div id="app">
+      <div class="appBg"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i></div>
+
+      <!-- top bar -->
+      <header class="topbar">
+        <div class="tbRight">
+          <div class="brand"><svg class="ic fill"><use href="#i-spark"/></svg>صدفة</div>
+          <div class="onlinePill"><i class="dot"></i><span id="onlineCount">١٬٢٤٦</span> متصل</div>
+        </div>
+        <button class="sndBtn" id="sndBtn" aria-label="كتم الصوت">
+          <span style="display:flex;align-items:center;gap:4px">
+            <svg class="ic" style="width:18px;height:18px" id="sndIco"><use href="#i-vol"/></svg>
+            <span class="eq"><i></i><i></i><i></i></span>
+          </span>
+        </button>
+      </header>
+
+      <!-- HOME -->
+      <section class="screen active" id="scrHome">
+        <div class="hero stag" style="--i:0">
+          <div class="heroLogo"><svg class="ic fill"><use href="#i-spark"/></svg></div>
+          <h1>خلّ <em>الصدفة</em> تختار<br>لقاءك الجاي</h1>
+          <p>مكالمات فيديو عشوائية بشخصيتك الافتراضية. وجهكحرّكها… وهي تطلع للطرف الثاني بدالك.</p>
+        </div>
+        <div class="ticker stag" style="--i:1"><svg class="ic fill"><use href="#i-spark"/></svg><span id="tickerTxt">ريم 🇸🇦 التقت بمشعل 🇰🇼 قبل ٢ دقيقة</span></div>
+        <div class="card formCard stag" style="--i:2">
+          <div><div class="lbl" style="margin-bottom:7px">اسمك المستعار</div>
+            <input type="text" id="nameInput" maxlength="18" placeholder="مثلاً: نجم الليل" autocomplete="off"></div>
+          <div><div class="lbl" style="margin-bottom:7px">فئتك العمرية <span style="color:var(--dim);font-weight:400">(اختياري)</span></div>
+            <div class="chipRow" id="ageChips">
+              <button class="chip" data-age="18-24">18–24</button>
+              <button class="chip" data-age="25-34">25–34</button>
+              <button class="chip" data-age="35+">35+</button>
+            </div></div>
+          <div><div class="lbl" style="margin-bottom:7px">اهتماماتك <span style="color:var(--dim);font-weight:400">(حتى ٣ — نطابقك بها)</span></div>
+            <div class="chipRow" id="tagChips">
+              <button class="chip" data-tag="ألعاب">🎮 ألعاب</button>
+              <button class="chip" data-tag="أنمي">🌸 أنمي</button>
+              <button class="chip" data-tag="موسيقى">🎧 موسيقى</button>
+              <button class="chip" data-tag="أفلام">🎬 أفلام</button>
+              <button class="chip" data-tag="رياضة">⚽ رياضة</button>
+              <button class="chip" data-tag="سفر">✈️ سفر</button>
+              <button class="chip" data-tag="تقنية">💻 تقنية</button>
+              <button class="chip" data-tag="طبخ">🍳 طبخ</button>
+            </div></div>
+          <div class="adultRow">
+            <div class="t">أؤكد أن عمري 18 سنة أو أكثر<small>صدفة مخصّصة للبالغين فقط</small></div>
+            <button class="switch" id="adultTgl" role="switch" aria-checked="false" aria-label="تأكيد العمر"></button>
+          </div>
+        </div>
+        <button class="btn primary stag" style="--i:3" id="homeCta" disabled>هيّئ كاميرتك وشخصيتك <svg class="ic" style="transform:scaleX(-1)"><use href="#i-back"/></svg></button>
+        <div class="homeFoot stag" style="--i:4"><svg class="ic"><use href="#i-shield"/></svg> كاميرتك لا تُبث أبداً — تُستخدم لتتبّع وجهك محلياً فقط</div>
+      </section>
+
+      <!-- PERMISSIONS -->
+      <section class="screen" id="scrPerms">
+        <div class="scrHead stag" style="--i:0">
+          <button class="back" data-go="scrHome" aria-label="رجوع"><svg class="ic"><use href="#i-back"/></svg></button>
+          <div><h2>الكاميرا والصوت</h2><p>خطوة وحدة قبل الاستوديو</p></div>
+        </div>
+        <div class="card permCard stag" style="--i:1">
+          <div class="permIco"><svg class="ic"><use href="#i-cam"/></svg></div>
+          <div class="info"><b>الكاميرا الأمامية</b><small>لتتبّع وجهك وتحريك الشخصية مثلك — لا يراها أحد</small></div>
+          <div class="permSt" id="permCamSt">—</div>
+        </div>
+        <div class="card permCard stag" style="--i:2">
+          <div class="permIco" style="color:var(--cyan)"><svg class="ic"><use href="#i-mic"/></svg></div>
+          <div class="info"><b>المايكروفون</b><small>صوتك يُرسل للطرف الآخر + يحرّك فم الشخصية</small></div>
+          <div class="permSt" id="permMicSt">—</div>
+        </div>
+        <div class="privacyNote stag" style="--i:3">
+          <svg class="ic"><use href="#i-shield"/></svg>
+          <p><b>خصوصيتك أولاً:</b> الفيديو المُرسَل هو شخصيتك على خلفية سوداء فقط. صورة كاميرتك الحقيقية تبقى داخل جهازك ولا تغادره أبداً.</p>
+        </div>
+        <div class="card permPreview stag" style="--i:4" id="permPreview">
+          <video id="permVid" autoplay playsinline muted></video>
+          <div class="meterWrap">
+            <div class="lbl">مستوى المايك — تكلّم وشوف 👇</div>
+            <div class="meter" id="micMeter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="hint" style="margin-top:6px">المعاينة لك فقط 🪞</div>
+          </div>
+        </div>
+        <div class="permBtns stag" style="--i:5">
+          <button class="btn primary" id="grantBtn"><svg class="ic"><use href="#i-cam"/></svg> السماح بالكاميرا والمايك</button>
+          <button class="btn cool" id="permNext" style="display:none">التالي — استوديو الشخصية <svg class="ic" style="transform:scaleX(-1)"><use href="#i-back"/></svg></button>
+          <button class="skipLink" id="permSkip">المتابعة بدون كاميرا ومايك</button>
+        </div>
+      </section>
+
+      <!-- STUDIO -->
+      <section class="screen" id="scrStudio">
+        <div class="stageWrap stag" style="--i:0" id="stageWrap">
+          <canvas id="glCanvas"></canvas>
+          <canvas id="outCanvas"></canvas>
+          <div class="stageTop">
+            <span class="liveChip"><i class="dot"></i> معاينة ما يُرسَل</span>
+            <span class="trackChip" id="trackChip">بدون كاميرا</span>
+          </div>
+          <div class="dragHint" id="dragHint">👆 اسحب لتدوير الشخصية — قرّب/بعّد بالعجلة</div>
+          <div class="stageLoad" id="stageLoad"><div class="sp"></div><p id="stageLoadTxt">نعالج الشخصية…</p></div>
+        </div>
+        <div class="vrmRow stag" style="--i:1">
+          <button class="btn primary sm" id="vrmAddBtn"><svg class="ic"><use href="#i-up"/></svg> أضف شخصية VRM</button>
+          <button class="btn ghost sm" id="hubBtn"><svg class="ic"><use href="#i-ext"/></svg> VRoid Hub</button>
+          <input type="file" id="vrmInput" accept=".vrm" hidden>
+        </div>
+        <div class="vrmHint stag" style="--i:1">حمّل ملف <b style="color:var(--mag)">.vrm</b> من <a href="https://hub.vroid.com" target="_blank" rel="noopener">VRoid Hub</a> وأضفه — يظهر للطرف الآخر تلقائياً ✨</div>
+        <div class="vrmChip" id="vrmChip"><svg class="ic" style="width:15px;height:15px"><use href="#i-check"/></svg><span class="nm" id="vrmName">model.vrm</span><button id="vrmRemove" aria-label="إزالة"><svg class="ic" style="width:15px;height:15px"><use href="#i-x"/></svg></button></div>
+        <div class="personaRow stag" style="--i:2" id="personaRow"></div>
+        <div class="deck stag" style="--i:3" id="deck">
+          <div class="deckCard"><div class="top"><span class="lft"><svg class="ic"><use href="#i-zoom"/></svg>القرب</span><span class="val" id="vZoom">1.00×</span></div><input type="range" id="rZoom" min="0.7" max="1.5" step="0.01" value="1"></div>
+          <div class="deckCard"><div class="top"><span class="lft"><svg class="ic"><use href="#i-scale"/></svg>الحجم</span><span class="val" id="vScale">1.00×</span></div><input type="range" id="rScale" min="0.7" max="1.4" step="0.01" value="1"></div>
+          <div class="deckCard"><div class="top"><span class="lft"><svg class="ic"><use href="#i-glow"/></svg>التوهج</span><span class="val" id="vGlow">70%</span></div><input type="range" id="rGlow" min="0" max="1" step="0.01" value="0.7"></div>
+          <div class="deckCard"><div class="top"><span class="lft"><svg class="ic"><use href="#i-parts"/></svg>الجسيمات</span><span class="val" id="vParts">70</span></div><input type="range" id="rParts" min="0" max="160" step="2" value="70"></div>
+          <div class="deckCard"><div class="top"><span class="lft"><svg class="ic"><use href="#i-pal"/></svg>لون الإضاءة</span></div>
+            <div class="swRow" id="rimSw">
+              <button class="sw on" data-rim="#22D3EE" style="background:#22D3EE;color:#22D3EE" aria-label="سماوي"></button>
+              <button class="sw" data-rim="#FF2E88" style="background:#FF2E88;color:#FF2E88" aria-label="وردي"></button>
+              <button class="sw" data-rim="#A855F7" style="background:#A855F7;color:#A855F7" aria-label="بنفسجي"></button>
+              <button class="sw" data-rim="#FFB020" style="background:#FFB020;color:#FFB020" aria-label="ذهبي"></button>
+              <button class="sw" data-rim="#A3E635" style="background:#A3E635;color:#A3E635" aria-label="أخضر"></button>
+            </div></div>
+          <div class="deckCard"><div class="top"><span class="lft"><svg class="ic"><use href="#i-face"/></svg>حساسية التتبّع</span><span class="val" id="vSens">1.0×</span></div><input type="range" id="rSens" min="0.4" max="2" step="0.05" value="1"></div>
+          <div class="deckCard"><div class="top"><span class="lft"><svg class="ic"><use href="#i-wave"/></svg>النعومة</span><span class="val" id="vSmooth">55%</span></div><input type="range" id="rSmooth" min="0.1" max="0.95" step="0.01" value="0.55"></div>
+          <div class="deckCard"><div class="top"><span class="lft"><svg class="ic"><use href="#i-idle"/></svg>حركة الخمول</span><span class="val" id="vIdle">60%</span></div><input type="range" id="rIdle" min="0" max="1" step="0.01" value="0.6"></div>
+          <div class="deckCard" style="gap:11px">
+            <div class="tglRow">دوران تلقائي <button class="switch" id="tRotate" role="switch" aria-checked="false"></button></div>
+            <div class="tglRow">هالة أرضية <button class="switch on" id="tFloor" role="switch" aria-checked="true"></button></div>
+          </div>
+          <div class="deckCard acts">
+            <button class="actBtn" id="btnRand"><svg class="ic"><use href="#i-dice"/></svg> مظهر عشوائي</button>
+            <button class="actBtn" id="btnReset"><svg class="ic"><use href="#i-reset"/></svg> إعادة ضبط</button>
+            <button class="actBtn" id="btnShot"><svg class="ic"><use href="#i-dl"/></svg> حفظ صورة PNG</button>
+          </div>
+        </div>
+        <button class="btn primary stag" style="--i:4" id="studioNext">شخصيتي جاهزة — التالي <svg class="ic" style="transform:scaleX(-1)"><use href="#i-back"/></svg></button>
+      </section>
+
+      <!-- LOBBY -->
+      <section class="screen" id="scrLobby">
+        <div class="readyHead stag" style="--i:0"><h2>كل شيء <em>جاهز</em> ✨</h2><p>هذا بالضبط ما سيراه الطرف الآخر</p></div>
+        <div class="lobbyPreview stag" style="--i:1">
+          <video id="lobbyVid" autoplay playsinline muted></video>
+          <div class="stageTop"><span class="liveChip"><i class="dot"></i> بث شخصيتك</span><span class="trackChip ok">تُرسل تلقائياً ✓</span></div>
+        </div>
+        <div class="card checkList stag" style="--i:2">
+          <div class="checkItem"><svg class="ic"><use href="#i-check"/></svg> الشخصية جاهزة وتُرسل قبل المكالمة<small id="liPerson">نور</small></div>
+          <div class="checkItem"><svg class="ic" id="liMicIco"><use href="#i-check"/></svg> <span id="liMicTxt">المايك يعمل — صوتك سيصل</span><small>يمكن كتمه أثناء المكالمة</small></div>
+          <div class="checkItem"><svg class="ic" id="liTrackIco"><use href="#i-check"/></svg> <span id="liTrackTxt">تتبّع الوجه نشط</span><small>حركتك = حركتها</small></div>
+        </div>
+        <div class="lobbyToggles stag" style="--i:3">
+          <div class="card ltCard" id="ltMic"><span class="lft"><svg class="ic" id="ltMicIco"><use href="#i-mic"/></svg> المايك</span><button class="switch on" id="swMic" role="switch" aria-checked="true"></button></div>
+          <div class="card ltCard" id="ltCam"><span class="lft"><svg class="ic" id="ltCamIco"><use href="#i-cam"/></svg> الشخصية</span><button class="switch on" id="swCam" role="switch" aria-checked="true"></button></div>
+        </div>
+        <button class="btn primary stag" style="--i:4;font-size:18px;padding:17px" id="lobbyCta"><svg class="ic fill" style="width:22px;height:22px"><use href="#i-dice"/></svg> ابدأ صدفة عشوائية</button>
+        <div class="hint stag" style="--i:5;text-align:center">بمجرد القبول تُرسل شخصيتك وصوتك للطرف الآخر فوراً ⚡</div>
+      </section>
+
+      <!-- MATCH -->
+      <section class="screen" id="scrMatch">
+        <div class="radar">
+          <i class="ring"></i><i class="ring"></i><i class="ring"></i>
+          <div class="sweep"></div>
+          <div class="orbit"><i></i><i></i><i></i></div>
+          <div class="myBubble"><video id="matchVid" autoplay playsinline muted></video></div>
+        </div>
+        <div class="matchStatus" id="matchStatus">نبحث عن صدفتك…</div>
+        <div class="matchSub">شخصيتك جاهزة للإرسال التلقائي فور القبول<br>نطابقك حسب اهتماماتك 🎯</div>
+        <div class="matchTime" id="matchTime">00:00</div>
+        <button class="btn ghost" id="matchCancel"><svg class="ic"><use href="#i-x"/></svg> إلغاء البحث</button>
+        <div class="matchFlash" id="matchFlash"><div class="big">✨</div><h3>وجدنا صدفة!</h3></div>
+      </section>
+
+      <!-- CALL -->
+      <section class="screen noPad" id="scrCall">
+        <video id="bigVid" autoplay playsinline muted></video>
+        <div class="callScrimT"></div><div class="callScrimB"></div>
+        <div class="partnerCard" id="partnerCard">
+          <div class="pAvatar"><canvas id="pAvatarCv" width="84" height="84"></canvas></div>
+          <div class="pInfo">
+            <div class="nm"><span id="partnerName">…</span><span class="badge" id="partnerBadge">تجريبي</span></div>
+            <div class="meta"><span id="partnerMeta">…</span><span class="shared" id="partnerShared"></span></div>
+          </div>
+          <div class="pRight">
+            <div class="connBars" id="connBars"><i></i><i></i><i></i><i></i></div>
+            <div class="pMicSt" id="pMicSt"><div class="wave" id="pWave"><i></i><i></i><i></i><i></i><i></i></div><svg class="ic" id="pMicIco"><use href="#i-mic"/></svg></div>
+          </div>
+        </div>
+        <div class="callTimer"><i class="dot"></i><span id="callTimer">00:00</span></div>
+        <div class="selfChip">🪞 تشاهد نفسك — انقر الصورة المصغّرة للرجوع</div>
+        <div class="pip" id="pip"><video id="pipVid" autoplay playsinline muted></video><span class="tag" id="pipTag">أنت</span></div>
+        <div class="heartsLayer" id="heartsLayer"></div>
+        <div class="coach" id="coach">انقر مرتين على الشاشة لإرسال ❤️</div>
+        <button class="btn cool sm audioEnable" id="audioEnable">🔊 انقر لتفعيل صوت الطرف الآخر</button>
+        <div class="callCtrls">
+          <div class="cBtn" id="btnMic"><button class="cir" aria-label="المايك"><svg class="ic" id="btnMicIco"><use href="#i-mic"/></svg></button><small>المايك</small></div>
+          <div class="cBtn" id="btnCam"><button class="cir" aria-label="الكاميرا"><svg class="ic" id="btnCamIco"><use href="#i-cam"/></svg></button><small>الشخصية</small></div>
+          <div class="cBtn" id="btnChat"><button class="cir" aria-label="الدردشة"><svg class="ic"><use href="#i-chat"/></svg><span class="bdg" id="chatBadge">1</span></button><small>دردشة</small></div>
+          <div class="cBtn next" id="btnNext"><button class="cir" aria-label="صدفة جديدة"><svg class="ic"><use href="#i-next"/></svg></button><small>التالي</small></div>
+          <div class="cBtn end" id="btnEnd"><button class="cir" aria-label="إنهاء"><svg class="ic"><use href="#i-phone"/></svg></button><small>إنهاء</small></div>
+        </div>
+        <div class="chatSheet" id="chatSheet">
+          <div class="chatHead"><b>💬 دردشة الصدفة</b><button class="x" id="chatClose" aria-label="إغلاق"><svg class="ic" style="width:16px;height:16px"><use href="#i-x"/></svg></button></div>
+          <div class="chatList" id="chatList"></div>
+          <div class="typing" id="typing"><i></i><i></i><i></i></div>
+          <div class="quickRow" id="quickRow">
+            <button data-q="❤️">❤️</button><button data-q="😂">😂</button><button data-q="😮">😮</button><button data-q="👋">👋</button><button data-q="🔥">🔥</button><button data-q="🌹">🌹</button>
+          </div>
+          <div class="chatInputRow">
+            <input type="text" id="chatInput" maxlength="300" placeholder="اكتب رسالة…" autocomplete="off">
+            <button class="sendBtn" id="chatSend" aria-label="إرسال"><svg class="ic"><use href="#i-send"/></svg></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- AFTER -->
+      <section class="screen" id="scrAfter">
+        <div class="afterIco stag" style="--i:0"><svg class="ic fill"><use href="#i-heart"/></svg></div>
+        <h2 id="afterTitle" class="stag" style="--i:1">انتهت الصدفة</h2>
+        <p id="afterNote" class="stag" style="--i:1">لقاء قصير… بس يمكن يترك أثر 🌙</p>
+        <div class="card afterCard stag" style="--i:2">
+          <div class="pAvatar"><canvas id="afterAvatarCv" width="104" height="104"></canvas></div>
+          <div class="info"><b id="afterPartner">ريم</b><small id="afterMeta">🇸🇦 السعودية · 23</small></div>
+          <div class="afterDur" id="afterDur">02:14</div>
+        </div>
+        <div class="stag" style="--i:3;width:100%"><div class="lbl" style="text-align:center;margin-bottom:9px">كيف كانت الصدفة؟</div>
+          <div class="rateRow" id="rateRow">
+            <button class="rateBtn" data-rate="meh" aria-label="عادية">😐</button>
+            <button class="rateBtn" data-rate="good" aria-label="حلوة">🙂</button>
+            <button class="rateBtn" data-rate="love" aria-label="رائعة">😍</button>
+          </div></div>
+        <div class="statsRow stag" style="--i:4">
+          <div class="stat"><b id="statCalls">0</b><small>لقاءاتك</small></div>
+          <div class="stat"><b id="statLong">00:00</b><small>أطول مكالمة</small></div>
+          <div class="stat"><b id="statHearts">0</b><small>قلوب ❤️</small></div>
+        </div>
+        <div class="afterBtns stag" style="--i:5">
+          <button class="btn primary" id="afterNew"><svg class="ic fill"><use href="#i-dice"/></svg> صدفة جديدة</button>
+          <button class="btn ghost" id="afterHome">الرئيسية</button>
+          <button class="reportLink" id="reportLink"><svg class="ic"><use href="#i-flag"/></svg> إبلاغ / حظر هذا الشخص</button>
+        </div>
+      </section>
+
+      <!-- report sheet -->
+      <div class="scrim" id="scrim"></div>
+      <div class="sheet" id="reportSheet">
+        <h3>🚩 إبلاغ وحظر</h3>
+        <div class="sub">لن تظهر لك هذه الشخصية مجدداً. اختر السبب:</div>
+        <div class="chipRow" id="reasonChips" style="margin-bottom:15px">
+          <button class="chip" data-r="محتوى غير لائق">محتوى غير لائق</button>
+          <button class="chip" data-r="إساءة أو تنمّر">إساءة أو تنمّر</button>
+          <button class="chip" data-r="سبام">سبام</button>
+          <button class="chip" data-r="عمر غير مناسب">عمر غير مناسب</button>
+        </div>
+        <button class="btn danger" id="reportSend" disabled><svg class="ic"><use href="#i-block"/></svg> حظر وإبلاغ</button>
+        <button class="skipLink" id="reportCancel" style="margin-top:8px;width:100%">إلغاء</button>
+      </div>
+
+      <div id="toasts" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<video id="camFeed" autoplay playsinline muted></video>
+<audio id="remoteAud" autoplay playsinline></audio>
+<div id="rotateOverlay"><div class="ph">📱</div><p>دوّر جوالك للوضع العمودي</p><span class="hint">صدفة مصمّمة للوضع الطولي فقط</span></div>
+<noscript><div style="position:fixed;inset:0;background:#06040C;color:#fff;display:grid;place-items:center;z-index:9999;font-family:sans-serif">صدفة تحتاج تفعيل JavaScript</div></noscript>
+
+<script type="module">
+/* ================================================================
+   صدفة — Sudfa · random avatar video meet · single-file app
+   ================================================================ */
+'use strict';
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const uid=()=>Math.random().toString(36).slice(2,10);
+const fmtT=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+const arNum=n=>new Intl.NumberFormat('ar-EG').format(n);
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const vib=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+const DPR=()=>Math.min(window.devicePixelRatio||1,1.75);
+
+/* ---------------- storage ---------------- */
+const Store={
+  data:{name:'',age:'',tags:[],adult:false,sound:true,stats:{calls:0,longest:0,hearts:0},blocked:[],rim:'#22D3EE'},
+  load(){try{const d=JSON.parse(localStorage.getItem('sudfa-v1'));if(d)Object.assign(this.data,d,{stats:Object.assign({calls:0,longest:0,hearts:0},d.stats||{})})}catch(e){}},
+  save(){try{localStorage.setItem('sudfa-v1',JSON.stringify(this.data))}catch(e){}}
+};
+Store.load();
+
+/* ---------------- app state ---------------- */
+const App={
+  state:'scrHome', micOn:true, camOn:true, hasCam:false, hasMic:false,
+  streamLive:false, swapped:false, mediaStream:null, micTrack:null,
+  trackMode:'none', // none | loading | face | lite
+  persona:'نور', vrmActive:false, dragYaw:0, dragPitch:0,
+  online:1246, session:null, pending:null, myId:uid(), lastAfter:null, coachShown:false
+};
+
+/* ---------------- sound ---------------- */
+const Sound={
+  ctx:null,master:null,padNodes:null,muted:!Store.data.sound,
+  ensure(){ if(this.ctx)return true;
+    try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)();
+      this.master=this.ctx.createGain(); this.master.gain.value=this.muted?0:0.5; this.master.connect(this.ctx.destination);
+    }catch(e){return false} return true; },
+  resume(){ if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume().catch(()=>{}); },
+  setMuted(m){ this.muted=m; Store.data.sound=!m; Store.save();
+    if(this.master)this.master.gain.linearRampToValueAtTime(m?0:0.5,(this.ctx?this.ctx.currentTime:0)+0.1);
+    $('sndBtn').classList.toggle('muted',m);
+    $('sndIco').innerHTML=`<use href="#i-${m?'volx':'vol'}"/>`;
+    this.pad(); },
+  tone(f,dur,type='sine',vol=.3,delay=0,slide=0){ if(!this.ensure())return; this.resume();
+    const t=this.ctx.currentTime+delay,o=this.ctx.createOscillator(),g=this.ctx.createGain();
+    o.type=type;o.frequency.setValueAtTime(f,t); if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+dur);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g);g.connect(this.master);o.start(t);o.stop(t+dur+.05); },
+  tap(){this.tone(1400,.06,'sine',.1)},
+  pop(){this.tone(880,.09,'sine',.22);this.tone(1320,.12,'sine',.16,.05)},
+  chime(){this.tone(660,.16,'sine',.3);this.tone(990,.22,'sine',.3,.12);this.tone(1320,.35,'sine',.22,.24)},
+  ring(){this.tone(520,.14,'triangle',.12);this.tone(780,.14,'triangle',.09,.16)},
+  heart(){this.tone(1046,.1,'sine',.2);this.tone(1568,.16,'sine',.14,.06)},
+  end(){this.tone(660,.18,'sine',.25);this.tone(440,.3,'sine',.22,.14)},
+  pad(){ const want=!this.muted&&['scrHome','scrStudio','scrLobby','scrMatch'].includes(App.state);
+    if(want&&!this.padNodes&&this.ensure()){ this.resume();
+      const g=this.ctx.createGain();g.gain.value=0;g.connect(this.master);
+      const flt=this.ctx.createBiquadFilter();flt.type='lowpass';flt.frequency.value=420;flt.Q.value=2;flt.connect(g);
+      const os=[110,110.7,164.8].map(f=>{const o=this.ctx.createOscillator();o.type='sawtooth';o.frequency.value=f;o.connect(flt);o.start();return o});
+      const lfo=this.ctx.createOscillator(),lg=this.ctx.createGain();lfo.frequency.value=.07;lg.gain.value=180;lfo.connect(lg);lg.connect(flt.frequency);lfo.start();
+      g.gain.linearRampToValueAtTime(.045,this.ctx.currentTime+2);
+      this.padNodes={g,os,lfo};
+    } else if(!want&&this.padNodes){ const p=this.padNodes;this.padNodes=null;
+      try{p.g.gain.linearRampToValueAtTime(0,this.ctx.currentTime+.6);
+      setTimeout(()=>{p.os.forEach(o=>{try{o.stop()}catch(e){}});try{p.lfo.stop()}catch(e){}},800);}catch(e){} } }
+};
+$('sndBtn').addEventListener('click',()=>{Sound.ensure();Sound.setMuted(!Sound.muted);vib(10);toast(Sound.muted?'تم كتم كل الأصوات 🔇':'الصوت يعمل 🔊','info');});
+if(Sound.muted){$('sndBtn').classList.add('muted');$('sndIco').innerHTML='<use href="#i-volx"/>';}
+window.addEventListener('pointerdown',function once(){Sound.ensure();Sound.resume();Sound.pad();window.removeEventListener('pointerdown',once);},{once:true});
+
+/* ---------------- toasts ---------------- */
+function toast(txt,type='info',ms=2600){
+  const icons={ok:'check',warn:'flag',bad:'x',info:'spark'};
+  const el=document.createElement('div');el.className=`toast ${type}`;
+  el.innerHTML=`<svg class="ic ${type==='info'?'fill':''}"><use href="#i-${icons[type]}"/></svg><span>${txt}</span>`;
+  $('toasts').appendChild(el);
+  while($('toasts').children.length>3)$('toasts').firstChild.remove();
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},ms);
+}
+
+/* ---------------- router ---------------- */
+function go(id){
+  if(App.state===id)return;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=$(id);el.classList.add('active');el.scrollTop=0;
+  App.state=id;Sound.pad();
+  if(id==='scrStudio'){App.streamLive=true;requestAnimationFrame(()=>Studio.resize());}
+  if(id==='scrLobby')syncLobby();
+  if(id==='scrCall'&&!App.coachShown){App.coachShown=true;$('coach').style.opacity=1;setTimeout(()=>$('coach').style.opacity=0,4200);}
+  else $('coach').style.opacity=0;
+}
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{Sound.tap();go(b.dataset.go);}));
+
+/* ================================================================
+   AVATAR 2D — stylized anime bust engine (default + personas + bots)
+   ================================================================ */
+const PERSONAS={
+  'نور':{hair:'#8B5CF6',hair2:'#C4B5FD',eye:'#22D3EE',fit:'#241B3F',fit2:'#7C3AED',skin:'#FFD9C4',skin2:'#F3B899',style:0,acc:'phones'},
+  'ريم':{hair:'#F472B6',hair2:'#FBCFE8',eye:'#FFB020',fit:'#3B1230',fit2:'#FF2E88',skin:'#FFE0CC',skin2:'#F5BE9E',style:1,acc:'pin'},
+  'كاي':{hair:'#94A3B8',hair2:'#E2E8F0',eye:'#A855F7',fit:'#0F172A',fit2:'#38BDF8',skin:'#E8B48C',skin2:'#C98F63',style:2,acc:'none'}
+};
+class Avatar2D{
+  constructor(canvas,pal,seed=Math.random()*10){
+    this.cv=canvas;this.ctx=canvas.getContext('2d');
+    this.p=Object.assign({},PERSONAS['نور'],pal);
+    this.seed=seed;this.t=rnd(0,50);this.parts=[];this.w=300;this.h=380;this.autoBlink=0;this.nextBlink=rnd(1.5,4);
+  }
+  setPalette(p){Object.assign(this.p,p);}
+  resize(w,h){this.w=w;this.h=h;}
+  update(dt,pose){
+    this.t+=dt;this.pose=pose;
+    this.nextBlink-=dt;
+    if(this.nextBlink<=0){this.autoBlink=1;this.nextBlink=rnd(1.8,4.6);}
+    this.autoBlink=Math.max(0,this.autoBlink-dt*7);
+    const want=Math.round(Studio.params.parts);
+    while(this.parts.length<want)this.parts.push({x:Math.random(),y:Math.random(),r:rnd(.8,2.4),s:rnd(.01,.05),c:Math.random()});
+    if(this.parts.length>want)this.parts.length=want;
+    for(const p of this.parts){p.y-=p.s*dt;if(p.y<-.02){p.y=1.02;p.x=Math.random();}}
+  }
+  render(){
+    const c=this.ctx,W=this.w,H=this.h,P=this.p,po=this.pose||{yaw:0,pitch:0,roll:0,mouth:0,blinkL:0,blinkR:0,happy:.3,brow:0};
+    const par=Studio.params,t=this.t;
+    c.setTransform(this.cv.width/W,0,0,this.cv.height/H,0,0);
+    c.clearRect(0,0,W,H);
+    c.fillStyle='#000';c.fillRect(0,0,W,H);
+    /* aura */
+    const glow=par.glow;
+    if(glow>0.02){
+      const g=c.createRadialGradient(W/2,H*.42,10,W/2,H*.42,W*.72);
+      g.addColorStop(0,this.hexA(par.rim,.20*glow));g.addColorStop(.55,this.hexA('#7C3AED',.10*glow));g.addColorStop(1,'rgba(0,0,0,0)');
+      c.fillStyle=g;c.fillRect(0,0,W,H);
+      if(par.floor){const fg=c.createRadialGradient(W/2,H*.97,4,W/2,H*.97,W*.5);
+        fg.addColorStop(0,this.hexA(par.rim,.30*glow));fg.addColorStop(1,'rgba(0,0,0,0)');
+        c.save();c.translate(W/2,H*.97);c.scale(1,.22);c.translate(-W/2,-H*.97);c.fillStyle=fg;c.fillRect(0,H*.6,W,H*.4);c.restore();}
+    }
+    /* particles */
+    for(const p of this.parts){
+      c.globalAlpha=.25+.45*Math.sin(t*2+p.x*20)**2;
+      c.fillStyle=p.c<.4?par.rim:(p.c<.7?'#A855F7':'#22D3EE');
+      c.beginPath();c.arc(p.x*W,p.y*H,p.r,0,7);c.fill();
+    }
+    c.globalAlpha=1;
+    /* character space */
+    const zoom=par.zoom*par.scale;
+    const R=W*.205*zoom;
+    const idle=par.idle;
+    const sway=Math.sin(t*.8+this.seed)*2.2*idle;
+    const breathe=Math.sin(t*1.6+this.seed)*.012*idle;
+    const cx=W/2+sway+po.yaw*R*.28, cy=H*.40+Math.sin(t*1.1)*2*idle+po.pitch*R*.22;
+    const rot=po.roll*.85+(par.rotate?Math.sin(t*.5)*.06:0);
+    const blinkL=Math.max(po.blinkL,this.autoBlink),blinkR=Math.max(po.blinkR,this.autoBlink);
+    const mouth=clamp(po.mouth,0,1),happy=clamp(po.happy,0,1),brow=po.brow||0;
+    /* back hair */
+    c.save();c.translate(cx,cy);c.rotate(rot*.6);
+    const hairSway=Math.sin(t*1.3+this.seed)*R*.04*idle;
+    const backLen=P.style===2?R*1.15:R*2.05;
+    let hg=c.createLinearGradient(0,-R,0,backLen);hg.addColorStop(0,P.hair2);hg.addColorStop(.4,P.hair);hg.addColorStop(1,this.shade(P.hair,-.45));
+    c.fillStyle=hg;
+    c.beginPath();
+    c.moveTo(-R*1.12,-R*.15);
+    c.bezierCurveTo(-R*1.3,R*.9,-R*1.05+hairSway,backLen*.8,-R*.85+hairSway,backLen);
+    c.lineTo(R*.85+hairSway,backLen);
+    c.bezierCurveTo(R*1.05+hairSway,backLen*.8,R*1.3,R*.9,R*1.12,-R*.15);
+    c.bezierCurveTo(R*1.15,-R*1.25,-R*1.15,-R*1.25,-R*1.12,-R*.15);
+    c.fill();c.restore();
+    /* body */
+    const by=cy+R*1.02;
+    c.save();c.translate(cx,by);c.scale(1+breathe,1);
+    /* neck */
+    c.fillStyle=P.skin2;c.fillRect(-R*.22,-R*.25,R*.44,R*.5);
+    /* torso */
+    let fg=c.createLinearGradient(0,0,0,H-by);fg.addColorStop(0,P.fit2);fg.addColorStop(1,P.fit);
+    c.fillStyle=fg;
+    c.beginPath();
+    c.moveTo(-R*.34,R*.05);
+    c.bezierCurveTo(-R*1.5,R*.35,-R*1.85,R*1.1,-R*1.9,H-by+20);
+    c.lineTo(R*1.9,H-by+20);
+    c.bezierCurveTo(R*1.85,R*1.1,R*1.5,R*.35,R*.34,R*.05);
+    c.bezierCurveTo(R*.2,R*.42,-R*.2,R*.42,-R*.34,R*.05);
+    c.fill();
+    /* collar + zip */
+    c.strokeStyle=this.hexA('#000',.35);c.lineWidth=R*.05;
+    c.beginPath();c.moveTo(0,R*.42);c.lineTo(0,H-by);c.stroke();
+    c.strokeStyle=this.hexA(P.fit2,.9);c.lineWidth=R*.09;
+    c.beginPath();c.moveTo(-R*.4,R*.12);c.quadraticCurveTo(0,R*.62,R*.4,R*.12);c.stroke();
+    /* rim on shoulder */
+    if(glow>.02){c.save();c.strokeStyle=this.hexA(par.rim,.55*glow);c.lineWidth=2.5;c.shadowColor=par.rim;c.shadowBlur=14*glow;
+      c.beginPath();c.moveTo(R*.45,R*.14);c.bezierCurveTo(R*1.45,R*.42,R*1.8,R*1.1,R*1.85,H-by);c.stroke();c.restore();}
+    c.restore();
+    /* head group */
+    c.save();c.translate(cx,cy);c.rotate(rot);
+    /* ears */
+    c.fillStyle=P.skin;
+    c.beginPath();c.ellipse(-R*.97,R*.12,R*.14,R*.22,0,0,7);c.fill();
+    c.beginPath();c.ellipse(R*.97,R*.12,R*.14,R*.22,0,0,7);c.fill();
+    /* face */
+    let sg=c.createLinearGradient(0,-R,0,R);sg.addColorStop(0,P.skin);sg.addColorStop(1,P.skin2);
+    c.fillStyle=sg;
+    c.beginPath();
+    c.moveTo(-R*.95,-R*.25);
+    c.bezierCurveTo(-R*1.02,R*.45,-R*.6,R*.92,0,R*1.02);
+    c.bezierCurveTo(R*.6,R*.92,R*1.02,R*.45,R*.95,-R*.25);
+    c.bezierCurveTo(R*.9,-R*1.05,-R*.9,-R*1.05,-R*.95,-R*.25);
+    c.fill();
+    /* blush */
+    c.fillStyle=this.hexA('#FF6B9D',.14+happy*.22);
+    c.beginPath();c.ellipse(-R*.55,R*.42,R*.2,R*.1,0,0,7);c.fill();
+    c.beginPath();c.ellipse(R*.55,R*.42,R*.2,R*.1,0,0,7);c.fill();
+    /* eyes */
+    const eyeY=R*.14,eyeX=R*.42,irOff=po.yaw*R*.1;
+    this.eye(c,-eyeX,eyeY,R,blinkL,P.eye,irOff,po.pitch,happy);
+    this.eye(c, eyeX,eyeY,R,blinkR,P.eye,irOff,po.pitch,happy);
+    /* brows */
+    c.strokeStyle=this.shade(P.hair,-.25);c.lineWidth=R*.055;c.lineCap='round';
+    const bOff=-brow*R*.12;
+    c.beginPath();c.moveTo(-eyeX-R*.24,eyeY-R*.3+bOff);c.quadraticCurveTo(-eyeX,eyeY-R*.4+bOff,-eyeX+R*.22,eyeY-R*.31+bOff);c.stroke();
+    c.beginPath();c.moveTo(eyeX-R*.22,eyeY-R*.31+bOff);c.quadraticCurveTo(eyeX,eyeY-R*.4+bOff,eyeX+R*.24,eyeY-R*.3+bOff);c.stroke();
+    /* nose */
+    c.strokeStyle=this.hexA(P.skin2,.9);c.lineWidth=R*.035;
+    c.beginPath();c.moveTo(R*.02,R*.4);c.lineTo(R*.06,R*.47);c.stroke();
+    /* mouth */
+    const my=R*.63;
+    if(mouth>.14){
+      const mh=R*(.08+mouth*.3),mw=R*(.16+mouth*.14);
+      c.fillStyle='#7A2E3E';
+      c.beginPath();c.ellipse(0,my+mh*.3,mw,mh,0,0,7);c.fill();
+      c.fillStyle='#E56B7F';
+      c.beginPath();c.ellipse(0,my+mh*.62,mw*.6,mh*.42,0,0,7);c.fill();
+      c.strokeStyle=this.hexA('#5c1f2c',.8);c.lineWidth=R*.03;
+      c.beginPath();c.ellipse(0,my+mh*.3,mw,mh,0,0,7);c.stroke();
+    }else{
+      c.strokeStyle='#B0455C';c.lineWidth=R*.05;c.lineCap='round';
+      c.beginPath();c.moveTo(-R*.16,my);c.quadraticCurveTo(0,my+R*(.04+happy*.14),R*.16,my);c.stroke();
+    }
+    /* front hair / bangs */
+    hg=c.createLinearGradient(0,-R*1.15,0,R*.3);hg.addColorStop(0,P.hair2);hg.addColorStop(.65,P.hair);hg.addColorStop(1,this.shade(P.hair,-.2));
+    c.fillStyle=hg;
+    c.beginPath();
+    if(P.style===0){ /* straight notched */
+      c.moveTo(-R*1.02,-R*.1);
+      c.bezierCurveTo(-R*1.1,-R*1.2,R*1.1,-R*1.2,R*1.02,-R*.1);
+      c.lineTo(R*.88,R*.06);c.lineTo(R*.62,-R*.22);c.lineTo(R*.4,R*.1);c.lineTo(R*.16,-R*.2);
+      c.lineTo(-R*.06,R*.12);c.lineTo(-R*.3,-R*.18);c.lineTo(-R*.55,R*.08);c.lineTo(-R*.78,-R*.2);c.lineTo(-R*1.02,-R*.1);
+    }else if(P.style===1){ /* side swept */
+      c.moveTo(-R*1.02,-R*.05);
+      c.bezierCurveTo(-R*1.12,-R*1.2,R*1.12,-R*1.2,R*1.02,-R*.15);
+      c.bezierCurveTo(R*1.0,R*.28,R*.8,R*.3,R*.72,R*.05);
+      c.bezierCurveTo(R*.5,-R*.3,R*.1,-R*.15,-R*.2,R*.18);
+      c.bezierCurveTo(-R*.5,R*.38,-R*.85,R*.3,-R*1.02,-R*.05);
+    }else{ /* messy short */
+      c.moveTo(-R*1.0,-R*.12);
+      c.bezierCurveTo(-R*1.1,-R*1.22,R*1.1,-R*1.22,R*1.0,-R*.12);
+      c.lineTo(R*.82,-R*.02);c.lineTo(R*.68,-R*.3);c.lineTo(R*.42,-.02*R);c.lineTo(R*.2,-R*.32);
+      c.lineTo(0,-R*.05);c.lineTo(-R*.22,-R*.33);c.lineTo(-R*.46,-R*.02);c.lineTo(-R*.68,-R*.3);c.lineTo(-R*1.0,-R*.12);
+    }
+    c.closePath();c.fill();
+    /* hair shine */
+    c.strokeStyle=this.hexA('#FFFFFF',.28);c.lineWidth=R*.07;c.lineCap='round';
+    c.beginPath();c.arc(0,-R*.18,R*.72,Math.PI*1.22,Math.PI*1.55);c.stroke();
+    /* ahoge */
+    c.strokeStyle=P.hair2;c.lineWidth=R*.05;
+    c.beginPath();c.moveTo(0,-R*1.05);
+    c.quadraticCurveTo(R*.1+Math.sin(t*2)*R*.08,-R*1.45,R*.32+Math.sin(t*2+1)*R*.1,-R*1.32);c.stroke();
+    /* accessory */
+    if(P.acc==='phones'){
+      c.strokeStyle=this.shade(P.fit2,.2);c.lineWidth=R*.12;
+      c.beginPath();c.arc(0,-R*.28,R*1.04,Math.PI*1.12,Math.PI*1.88);c.stroke();
+      for(const s of[-1,1]){
+        c.fillStyle='#14101F';c.beginPath();c.ellipse(s*R*1.0,R*.08,R*.16,R*.3,0,0,7);c.fill();
+        c.strokeStyle=par.rim;c.lineWidth=2;c.save();c.shadowColor=par.rim;c.shadowBlur=10*glow;
+        c.beginPath();c.ellipse(s*R*1.0,R*.08,R*.16,R*.3,0,0,7);c.stroke();c.restore();
+      }
+    }else if(P.acc==='pin'){
+      c.save();c.translate(R*.58,-R*.42);c.rotate(.3);c.fillStyle='#FFB020';c.shadowColor='#FFB020';c.shadowBlur=8;
+      c.beginPath();for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5;c.lineTo(Math.cos(a)*R*.13,Math.sin(a)*R*.13);const a2=a+Math.PI/5;c.lineTo(Math.cos(a2)*R*.055,Math.sin(a2)*R*.055);}c.closePath();c.fill();c.restore();
+    }else if(P.acc==='cat'){
+      c.fillStyle=P.hair;
+      for(const s of[-1,1]){c.beginPath();c.moveTo(s*R*.45,-R*.95);c.lineTo(s*R*.85,-R*1.5);c.lineTo(s*R*.95,-R*.8);c.closePath();c.fill();
+        c.fillStyle=this.hexA('#FF2E88',.6);c.beginPath();c.moveTo(s*R*.58,-R*.98);c.lineTo(s*R*.8,-R*1.32);c.lineTo(s*R*.85,-R*.9);c.closePath();c.fill();c.fillStyle=P.hair;}
+    }
+    /* rim kiss on face edge */
+    if(glow>.02){c.save();c.strokeStyle=this.hexA(par.rim,.5*glow);c.lineWidth=2.5;c.shadowColor=par.rim;c.shadowBlur=16*glow;
+      c.beginPath();c.arc(0,0,R*.98,-Math.PI*.35,Math.PI*.32);c.stroke();c.restore();}
+    c.restore();
+  }
+  eye(c,x,y,R,blink,col,irOff,pitch,happy){
+    const open=clamp(1-blink,0,1);
+    const eh=R*.30*open+R*.02, ew=R*.26;
+    c.save();c.translate(x,y+pitch*R*.05);
+    if(open<.12){ /* closed lash line */
+      c.strokeStyle='#2A1B33';c.lineWidth=R*.05;c.lineCap='round';
+      c.beginPath();c.moveTo(-ew,0);c.quadraticCurveTo(0,R*.06,ew,0);c.stroke();c.restore();return;
+    }
+    /* white */
+    c.fillStyle='#FFF7FA';
+    c.beginPath();c.ellipse(0,0,ew,eh,0,0,7);c.fill();
+    /* iris */
+    const ir=R*.185;
+    let ig=c.createRadialGradient(irOff,-eh*.25,ir*.15,irOff,0,ir);
+    ig.addColorStop(0,this.shade(col,.45));ig.addColorStop(.55,col);ig.addColorStop(1,this.shade(col,-.55));
+    c.save();c.beginPath();c.ellipse(0,0,ew,eh,0,0,7);c.clip();
+    c.fillStyle=ig;c.beginPath();c.arc(irOff,eh*.06,ir,0,7);c.fill();
+    c.fillStyle='#120A1C';c.beginPath();c.arc(irOff,eh*.06,ir*.45,0,7);c.fill();
+    c.fillStyle='rgba(255,255,255,.95)';c.beginPath();c.arc(irOff-ir*.35,-eh*.28,ir*.26,0,7);c.fill();
+    c.fillStyle='rgba(255,255,255,.6)';c.beginPath();c.arc(irOff+ir*.3,eh*.3,ir*.13,0,7);c.fill();
+    c.restore();
+    /* lash */
+    c.strokeStyle='#2A1B33';c.lineWidth=R*.06;c.lineCap='round';
+    c.beginPath();c.moveTo(-ew*1.05,-eh*.55);c.quadraticCurveTo(0,-eh*1.25,ew*1.05,-eh*.5);c.stroke();
+    if(happy>.55){c.strokeStyle=this.hexA('#2A1B33',.5);c.lineWidth=R*.035;
+      c.beginPath();c.moveTo(-ew*.8,eh*.75);c.quadraticCurveTo(0,eh*1.05,ew*.8,eh*.75);c.stroke();}
+    c.restore();
+  }
+  hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${clamp(a,0,1)})`;}
+  shade(hex,f){const n=parseInt(hex.slice(1),16);let r=n>>16&255,g=n>>8&255,b=n&255;
+    if(f>=0){r+=(255-r)*f;g+=(255-g)*f;b+=(255-b)*f;}else{r*=1+f;g*=1+f;b*=1+f;}
+    return `rgb(${r|0},${g|0},${b|0})`;}
+}
+
+/* ================================================================
+   STUDIO — compositor canvas (stream source) + engines + controls
+   ================================================================ */
+const Studio={
+  params:{zoom:1,scale:1,glow:.7,parts:70,rim:Store.data.rim||'#22D3EE',sens:1,smooth:.55,idle:.6,rotate:false,floor:true},
+  engine:null, vrm:null, out:null, octx:null, w:300, h:380, ready:false,
+  init(){
+    this.out=$('outCanvas');this.octx=this.out.getContext('2d');
+    this.engine=new Avatar2D(this.out,PERSONAS['نور']);
+    this.engine.ctx=this.octx; /* draws straight into compositor */
+    this.ready=true;this.resize();
+    new ResizeObserver(()=>this.resize()).observe($('stageWrap'));
+    this.bindControls();this.buildPersonas();this.bindDrag();
+  },
+  resize(){
+    const r=$('stageWrap').getBoundingClientRect();
+    if(r.width<10)return;
+    this.w=r.width;this.h=r.height;const d=DPR();
+    this.out.width=Math.round(r.width*d);this.out.height=Math.round(r.height*d);
+    this.engine.resize(r.width,r.height);
+    if(this.vrm)this.vrm.resize(r.width,r.height);
+  },
+  frame(dt,pose){
+    if(!this.ready)return;
+    const c=this.octx,W=this.w,H=this.h,d=this.out.width/W;
+    if(!App.camOn){ this.offCard(); return; }
+    if(this.vrm&&this.vrm.ok){
+      this.vrm.update(dt,pose);this.vrm.render();
+      c.setTransform(d,0,0,d,0,0);c.fillStyle='#000';c.fillRect(0,0,W,H);
+      try{c.drawImage(this.vrm.cv,0,0,this.vrm.cv.width,this.vrm.cv.height,0,0,W,H);}catch(e){}
+      /* vignette */
+      const vg=c.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,H*.75);
+      vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.35)');c.fillStyle=vg;c.fillRect(0,0,W,H);
+    }else{
+      this.engine.update(dt,pose);this.engine.render();
+    }
+  },
+  offCard(){
+    const c=this.octx,W=this.w,H=this.h,d=this.out.width/W;
+    c.setTransform(d,0,0,d,0,0);c.fillStyle='#050308';c.fillRect(0,0,W,H);
+    const cx=W/2,cy=H*.42;
+    c.strokeStyle='#3B2F63';c.lineWidth=2;c.fillStyle='#14102A';
+    c.beginPath();c.arc(cx,cy,44,0,7);c.fill();c.stroke();
+    c.strokeStyle='#6F6791';c.lineWidth=3;c.lineCap='round';c.lineJoin='round';
+    c.strokeRect(cx-20,cy-11,26,22);
+    c.beginPath();c.moveTo(cx+6,cy-4);c.lineTo(cx+18,cy-11);c.lineTo(cx+18,cy+11);c.lineTo(cx+6,cy+4);c.stroke();
+    c.strokeStyle='#FF3B5C';c.beginPath();c.moveTo(cx-26,cy-22);c.lineTo(cx+26,cy+22);c.stroke();
+    c.fillStyle='#A79FC6';c.textAlign='center';
+    c.font='700 17px Cairo, sans-serif';c.fillText('الكاميرا مغلقة',cx,cy+76);
+    c.fillStyle='#6F6791';c.font='500 12px "IBM Plex Sans Arabic", sans-serif';
+    c.fillText(Store.data.name||'ضيف',cx,cy+98);
+    c.fillStyle='#FF2E88';c.font='900 13px Cairo, sans-serif';c.fillText('✦ صدفة',cx,H-22);
+  },
+  snapshot(){
+    if(this.vrm&&this.vrm.ok&&App.camOn){this.vrm.render();}
+    const a=document.createElement('a');a.download='sudfa-avatar.png';a.href=this.out.toDataURL('image/png');a.click();
+    toast('تم حفظ صورتك 📸','ok');Sound.pop();
+  },
+  /* ---- controls ---- */
+  bindControls(){
+    const P=this.params;
+    const paint=el=>{const p=(el.value-el.min)/(el.max-el.min)*100;el.style.background=`linear-gradient(90deg,#7C3AED,#FF2E88 ${p}%,#221A3E ${p}%)`;};
+    const bind=(id,key,fmt,vid)=>{const el=$(id);paint(el);
+      el.addEventListener('input',()=>{P[key]=parseFloat(el.value);$(vid).textContent=fmt(P[key]);paint(el);});
+      $(vid).textContent=fmt(P[key]);};
+    bind('rZoom','zoom',v=>v.toFixed(2)+'×','vZoom');
+    bind('rScale','scale',v=>v.toFixed(2)+'×','vScale');
+    bind('rGlow','glow',v=>Math.round(v*100)+'%','vGlow');
+    bind('rParts','parts',v=>Math.round(v),'vParts');
+    bind('rSens','sens',v=>v.toFixed(1)+'×','vSens');
+    bind('rSmooth','smooth',v=>Math.round(v*100)+'%','vSmooth');
+    bind('rIdle','idle',v=>Math.round(v*100)+'%','vIdle');
+    document.querySelectorAll('#rimSw .sw').forEach(b=>{
+      if(b.dataset.rim===P.rim){document.querySelectorAll('#rimSw .sw').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+      b.addEventListener('click',()=>{P.rim=b.dataset.rim;Store.data.rim=P.rim;Store.save();
+        document.querySelectorAll('#rimSw .sw').forEach(x=>x.classList.remove('on'));b.classList.add('on');Sound.tap();});
+    });
+    const tgl=(id,key)=>{$(id).addEventListener('click',()=>{P[key]=!P[key];$(id).classList.toggle('on',P[key]);$(id).setAttribute('aria-checked',P[key]);Sound.tap();});};
+    tgl('tRotate','rotate');tgl('tFloor','floor');
+    $('btnRand').addEventListener('click',()=>{
+      const keys=Object.keys(PERSONAS);const k=pick(keys);
+      if(!this.vrm)this.setPersona(k);
+      P.rim=pick(['#22D3EE','#FF2E88','#A855F7','#FFB020','#A3E635']);
+      P.glow=rnd(.4,1);P.parts=Math.round(rnd(30,140));P.zoom=rnd(.85,1.25);P.idle=rnd(.3,.9);
+      this.syncUI();Sound.pop();vib(15);toast('مظهر عشوائي جديد 🎲','ok');
+    });
+    $('btnReset').addEventListener('click',()=>{
+      Object.assign(P,{zoom:1,scale:1,glow:.7,parts:70,rim:'#22D3EE',sens:1,smooth:.55,idle:.6,rotate:false,floor:true});
+      App.dragYaw=0;App.dragPitch=0;this.syncUI();Sound.tap();toast('رجعنا للوضع الافتراضي ↺','info');
+    });
+    $('btnShot').addEventListener('click',()=>this.snapshot());
+    $('vrmAddBtn').addEventListener('click',()=>{Sound.tap();$('vrmInput').click();});
+    $('hubBtn').addEventListener('click',()=>{Sound.tap();window.open('https://hub.vroid.com','_blank','noopener');toast('حمّل ملف .vrm ثم ارجع وأضفه ⬆','info',3400);});
+    $('vrmInput').addEventListener('change',e=>{const f=e.target.files[0];if(f)this.loadVRM(f);e.target.value='';});
+    $('vrmRemove').addEventListener('click',()=>{this.unloadVRM();toast('رجعنا للشخصية المدمجة','info');});
+    /* drag & drop VRM onto stage */
+    const sw=$('stageWrap');
+    sw.addEventListener('dragover',e=>e.preventDefault());
+    sw.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f&&/\.vrm$/i.test(f.name))this.loadVRM(f);});
+  },
+  syncUI(){
+    const P=this.params;
+    const set=(id,v,vid,fmt)=>{const el=$(id);el.value=v;$(vid).textContent=fmt(v);
+      const p=(v-el.min)/(el.max-el.min)*100;el.style.background=`linear-gradient(90deg,#7C3AED,#FF2E88 ${p}%,#221A3E ${p}%)`;};
+    set('rZoom',P.zoom,'vZoom',v=>(+v).toFixed(2)+'×');set('rScale',P.scale,'vScale',v=>(+v).toFixed(2)+'×');
+    set('rGlow',P.glow,'vGlow',v=>Math.round(v*100)+'%');set('rParts',P.parts,'vParts',v=>Math.round(v));
+    set('rSens',P.sens,'vSens',v=>(+v).toFixed(1)+'×');set('rSmooth',P.smooth,'vSmooth',v=>Math.round(v*100)+'%');
+    set('rIdle',P.idle,'vIdle',v=>Math.round(v*100)+'%');
+    document.querySelectorAll('#rimSw .sw').forEach(x=>x.classList.toggle('on',x.dataset.rim===P.rim));
+    $('tRotate').classList.toggle('on',P.rotate);$('tFloor').classList.toggle('on',P.floor);
+  },
+  buildPersonas(){
+    const row=$('personaRow');row.innerHTML='';
+    Object.entries(PERSONAS).forEach(([name,pal],i)=>{
+      const b=document.createElement('button');b.className='persona'+(name===App.persona&&!App.vrmActive?' on':'');b.dataset.p=name;
+      const cv=document.createElement('canvas');cv.width=68;cv.height=68;
+      const mini=new Avatar2D(cv,pal,i*3);mini.resize(34,34);
+      mini.update(.016,{yaw:0,pitch:0,roll:0,mouth:0,blinkL:0,blinkR:0,happy:.5,brow:0});
+      const oldParts=Studio.params.parts;Studio.params.parts=0;mini.render();Studio.params.parts=oldParts;
+      b.appendChild(cv);b.appendChild(document.createTextNode(name));
+      b.addEventListener('click',()=>{Sound.tap();this.setPersona(name);});
+      row.appendChild(b);
+    });
+  },
+  setPersona(name){
+    if(this.vrm)this.unloadVRM(true);
+    App.persona=name;App.vrmActive=false;
+    this.engine.setPalette(PERSONAS[name]);
+    document.querySelectorAll('.persona').forEach(x=>x.classList.toggle('on',x.dataset.p===name));
+    $('liPerson').textContent=name;
+  },
+  bindDrag(){
+    const sw=$('stageWrap');let dragging=false,lx=0,ly=0;
+    sw.addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;ly=e.clientY;sw.setPointerCapture(e.pointerId);$('dragHint').style.opacity=0;});
+    sw.addEventListener('pointermove',e=>{if(!dragging)return;
+      App.dragYaw=clamp(App.dragYaw+(e.clientX-lx)*.006,-.85,.85);
+      App.dragPitch=clamp(App.dragPitch+(e.clientY-ly)*.004,-.4,.4);
+      lx=e.clientX;ly=e.clientY;});
+    const up=()=>dragging=false;
+    sw.addEventListener('pointerup',up);sw.addEventListener('pointercancel',up);
+    sw.addEventListener('wheel',e=>{e.preventDefault();
+      Studio.params.zoom=clamp(Studio.params.zoom-Math.sign(e.deltaY)*.05,.7,1.5);Studio.syncUI();},{passive:false});
+    setTimeout(()=>{if(App.state==='scrStudio')$('dragHint').style.opacity=0;},7000);
+  },
+  /* ---- VRM ---- */
+  async loadVRM(file){
+    if(file.size>80*1024*1024){toast('الملف كبير جداً (الحد 80MB)','bad');return;}
+    $('stageLoad').classList.add('show');$('stageLoadTxt').textContent='نحمّل محرك الشخصيات ثلاثي الأبعاد…';
+    try{
+      if(!this.vrm)this.vrm=new AvatarVRM($('glCanvas'));
+      await this.vrm.initEngine();
+      $('stageLoadTxt').textContent='نعالج شخصية '+file.name+'…';
+      const buf=await file.arrayBuffer();
+      await this.vrm.load(buf);
+      App.vrmActive=true;App.persona=file.name.replace(/\.vrm$/i,'');
+      $('vrmName').textContent=file.name;$('vrmChip').classList.add('show');
+      $('liPerson').textContent='VRM: '+App.persona;
+      document.querySelectorAll('.persona').forEach(x=>x.classList.remove('on'));
+      this.resize();
+      toast('تمت إضافة شخصيتك ✓ ستُرسل تلقائياً للطرف الآخر','ok',3200);Sound.chime();vib([20,40,20]);
+    }catch(err){
+      console.warn('VRM load failed',err);
+      toast('تعذّر تحميل الشخصية — تأكد أن الملف .vrm سليم','bad',3400);
+      if(this.vrm&&!this.vrm.ok){this.vrm=null;}
+      App.vrmActive=false;
+    }finally{$('stageLoad').classList.remove('show');}
+  },
+  unloadVRM(silent){
+    if(this.vrm){this.vrm.disposeModel();}
+    App.vrmActive=false;$('vrmChip').classList.remove('show');
+    if(!silent){App.persona='نور';this.engine.setPalette(PERSONAS['نور']);
+      document.querySelectorAll('.persona').forEach(x=>x.classList.toggle('on',x.dataset.p==='نور'));
+      $('liPerson').textContent='نور';}
+  }
+};
+
+/* ================================================================
+   AVATAR VRM — three.js + @pixiv/three-vrm (lazy)
+   ================================================================ */
+class AvatarVRM{
+  constructor(cv){this.cv=cv;this.ok=false;this.vrm=null;this.mods=null;this.rotY=0;this.headY=1.3;this.parts=null;}
+  async initEngine(){
+    if(this.renderer)return;
+    const THREE=await import('three');
+    const {GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js');
+    const VRM=await import('@pixiv/three-vrm');
+    this.mods={THREE,GLTFLoader,VRM};
+    const renderer=new THREE.WebGLRenderer({canvas:this.cv,antialias:true,alpha:false,powerPreference:'high-performance'});
+    renderer.setPixelRatio(DPR());renderer.outputColorSpace=THREE.SRGBColorSpace;
+    renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
+    this.renderer=renderer;
+    const scene=new THREE.Scene();scene.background=new THREE.Color(0x000000);
+    scene.fog=new THREE.FogExp2(0x05030a,.10);
+    this.scene=scene;
+    this.camera=new THREE.PerspectiveCamera(29,1,.05,30);
+    scene.add(new THREE.HemisphereLight(0x8f7bff,0x0a0616,.55));
+    const key=new THREE.DirectionalLight(0xfff0e2,1.25);key.position.set(1.2,2.2,2.4);scene.add(key);
+    this.rim=new THREE.DirectionalLight(0x22d3ee,2.2);this.rim.position.set(-2,1.6,-1.8);scene.add(this.rim);
+    const fill=new THREE.DirectionalLight(0xff2e88,.7);fill.position.set(2,.6,-1.2);scene.add(fill);
+    /* aura plane behind */
+    const tex=this.radialTex(THREE);
+    this.aura=new THREE.Mesh(new THREE.PlaneGeometry(3.2,3.2),
+      new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:.4,blending:THREE.AdditiveBlending,depthWrite:false,color:0x7c3aed}));
+    this.aura.position.set(0,1.25,-.85);scene.add(this.aura);
+    this.floorGlow=new THREE.Mesh(new THREE.CircleGeometry(.9,40),
+      new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false,color:0x22d3ee}));
+    this.floorGlow.rotation.x=-Math.PI/2;this.floorGlow.position.y=.012;scene.add(this.floorGlow);
+    /* particles */
+    const N=160,pos=new Float32Array(N*3),col=new Float32Array(N*3);
+    const palette=[[.66,.33,.97],[.13,.83,.93],[1,.18,.53],[1,.69,.13]];
+    for(let i=0;i<N;i++){pos[i*3]=rnd(-1.4,1.4);pos[i*3+1]=rnd(0,2.4);pos[i*3+2]=rnd(-1.2,.6);
+      const c=pick(palette);col[i*3]=c[0];col[i*3+1]=c[1];col[i*3+2]=c[2];}
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
+    this.parts=new THREE.Points(g,new THREE.PointsMaterial({size:.02,vertexColors:true,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true}));
+    scene.add(this.parts);
+    this.clockT=0;
+  }
+  radialTex(THREE){
+    const cv=document.createElement('canvas');cv.width=cv.height=128;const c=cv.getContext('2d');
+    const g=c.createRadialGradient(64,64,2,64,64,64);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.4,'rgba(255,255,255,.35)');g.addColorStop(1,'rgba(255,255,255,0)');
+    c.fillStyle=g;c.fillRect(0,0,128,128);
+    const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;return t;
+  }
+  async load(buf){
+    const {GLTFLoader,VRM,THREE}=this.mods;
+    const loader=new GLTFLoader();
+    loader.register(p=>new VRM.VRMLoaderPlugin(p));
+    const gltf=await loader.parseAsync(buf,'');
+    const vrm=gltf.userData.vrm;
+    if(!vrm)throw new Error('no vrm in file');
+    this.disposeModel();
+    try{VRM.VRMUtils.removeUnnecessaryVertices&&VRM.VRMUtils.removeUnnecessaryVertices(gltf.scene);}catch(e){}
+    this.vrm=vrm;this.baseRot=(vrm.meta&&vrm.meta.metaVersion==='0')?Math.PI:0;
+    this.rotY=this.baseRot;
+    vrm.scene.rotation.y=this.rotY;
+    this.scene.add(vrm.scene);
+    /* relaxed pose */
+    const H=vrm.humanoid, bone=n=>H&&H.getNormalizedBoneNode?H.getNormalizedBoneNode(n):null;
+    const set=(n,x,y,z)=>{const b=bone(n);if(b)b.rotation.set(x,y,z);};
+    set('leftUpperArm',.1,0,-1.18);set('rightUpperArm',.1,0,1.18);
+    set('leftLowerArm',0,-.12,-.16);set('rightLowerArm',0,.12,.16);
+    set('leftHand',0,0,-.08);set('rightHand',0,0,.08);
+    set('spine',.03,0,0);
+    this.bones={head:bone('head'),neck:bone('neck'),spine:bone('spine'),chest:bone('chest'),
+      lua:bone('leftUpperArm'),rua:bone('rightUpperArm')};
+    vrm.update(.016);
+    const hp=new THREE.Vector3();
+    if(this.bones.head)this.bones.head.getWorldPosition(hp);else hp.set(0,1.3,0);
+    this.headY=hp.y;
+    this.ok=true;
+  }
+  disposeModel(){
+    if(!this.vrm)return;
+    const v=this.vrm;this.vrm=null;this.ok=false;
+    this.scene.remove(v.scene);
+    v.scene.traverse(o=>{
+      if(o.geometry)o.geometry.dispose();
+      if(o.material){const ms=Array.isArray(o.material)?o.material:[o.material];
+        ms.forEach(m=>{for(const k in m){if(m[k]&&m[k].isTexture)m[k].dispose();}m.dispose();});}
+    });
+  }
+  resize(w,h){if(!this.renderer)return;this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();}
+  update(dt,pose){
+    if(!this.ok)return;
+    const P=Studio.params,t=this.clockT+=dt;
+    const v=this.vrm,B=this.bones;
+    /* idle */
+    const idle=P.idle;
+    if(B.spine)B.spine.rotation.x=.03+Math.sin(t*1.5)*.015*idle;
+    if(B.lua){B.lua.rotation.z=-1.18+Math.sin(t*.9)*.03*idle;B.lua.rotation.x=.1+Math.sin(t*.7)*.02*idle;}
+    if(B.rua){B.rua.rotation.z=1.18-Math.sin(t*.9+1)*.03*idle;B.rua.rotation.x=.1+Math.sin(t*.7+2)*.02*idle;}
+    const yaw=clamp(pose.yaw+App.dragYaw,-1,1),pitch=clamp(pose.pitch+App.dragPitch,-.7,.7),roll=clamp(pose.roll,-.6,.6);
+    if(B.neck){B.neck.rotation.x=pitch*.35;B.neck.rotation.y=yaw*.35;B.neck.rotation.z=roll*.3;}
+    if(B.head){B.head.rotation.x=pitch*.65+Math.sin(t*1.1)*.01*idle;B.head.rotation.y=yaw*.65;B.head.rotation.z=roll*.7;}
+    /* expressions */
+    const em=v.expressionManager;
+    if(em){
+      const setE=(n,val)=>{try{if(em.getExpression&&em.getExpression(n))em.setValue(n,clamp(val,0,1));}catch(e){}};
+      const jaw=clamp(pose.mouth,0,1);
+      setE('blink',0);setE('blinkLeft',pose.blinkL);setE('blinkRight',pose.blinkR);
+      setE('aa',jaw*.85);setE('a',jaw*.85);
+      setE('oh',pose.funnel||0);setE('ou',pose.pucker||0);
+      setE('happy',clamp(pose.happy,0,1));setE('joy',clamp(pose.happy,0,1));
+      setE('relaxed',.12);setE('surprised',(pose.wide||0)*.7);
+      setE('angry',0);setE('sad',0);
+    }
+    /* params live */
+    v.scene.scale.setScalar(P.scale);
+    if(P.rotate)this.rotY+=dt*.45; else this.rotY=lerp(this.rotY,this.baseRot,1-Math.exp(-dt*3));
+    v.scene.rotation.y=this.rotY+App.dragYaw*.4;
+    const rimC=new this.mods.THREE.Color(P.rim);
+    this.rim.color.copy(rimC);this.rim.intensity=1+P.glow*2.6;
+    this.aura.material.opacity=.34*P.glow;this.aura.material.color.copy(rimC).lerp(new this.mods.THREE.Color(0x7c3aed),.5);
+    this.floorGlow.visible=P.floor;this.floorGlow.material.opacity=.5*P.glow;this.floorGlow.material.color.copy(rimC);
+    this.parts.geometry.setDrawRange(0,Math.round(P.parts));
+    this.parts.rotation.y=t*.03;this.parts.position.y=Math.sin(t*.4)*.04;
+    v.update(dt);
+    /* camera follows head */
+    const hp=new this.mods.THREE.Vector3();
+    if(B.head)B.head.getWorldPosition(hp);else hp.set(0,this.headY*P.scale,0);
+    const dist=1.06/ P.zoom;
+    this.camera.position.set(Math.sin(t*.14)*.015*idle,hp.y-.06+Math.sin(t*.5)*.006*idle,hp.z+dist);
+    this.camera.lookAt(hp.x,hp.y-.13,hp.z);
+  }
+  render(){if(this.renderer&&this.ok)this.renderer.render(this.scene,this.camera);}
+}
+
+/* ================================================================
+   CAMERA + MIC + TRACKING + POSE
+   ================================================================ */
+const Cam={
+  analyser:null,buf:null,level:0,remoteAnalyser:null,remoteBuf:null,remoteLevel:0,
+  async request(){
+    Sound.ensure();Sound.resume();
+    let stream=null,err=null;
+    const md=navigator.mediaDevices;
+    if(!md||!md.getUserMedia){toast('المتصفح لا يدعم الكاميرا — جرّب Chrome حديثاً over HTTPS','bad',4000);this.markUI(false,false);return;}
+    try{
+      stream=await md.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    }catch(e){err=e;
+      try{stream=await md.getUserMedia({video:false,audio:{echoCancellation:true,noiseSuppression:true}});}catch(e2){
+        try{stream=await md.getUserMedia({video:{facingMode:'user'},audio:false});}catch(e3){}
+      }
+    }
+    if(!stream){this.markUI(false,false);toast('تم رفض الإذن — تقدر تكمل بدون كاميرا، الشخصية تتحرك ذاتياً','warn',3800);$('permNext').style.display='flex';return;}
+    App.mediaStream=stream;
+    App.hasCam=stream.getVideoTracks().length>0;App.hasMic=stream.getAudioTracks().length>0;
+    App.micTrack=stream.getAudioTracks()[0]||null;
+    if(App.micTrack)App.micTrack.enabled=App.micOn;
+    this.markUI(App.hasCam,App.hasMic);
+    if(App.hasCam){
+      const feed=$('camFeed');feed.srcObject=stream;feed.play().catch(()=>{});
+      $('permVid').srcObject=stream;$('permVid').play().catch(()=>{});
+      $('permPreview').classList.add('show');
+      this.initTracking();
+    }
+    if(App.hasMic){
+      try{
+        Sound.ensure();
+        const src=Sound.ctx.createMediaStreamSource(new MediaStream([App.micTrack]));
+        this.analyser=Sound.ctx.createAnalyser();this.analyser.fftSize=512;
+        src.connect(this.analyser);this.buf=new Uint8Array(this.analyser.fftSize);
+      }catch(e){}
+      Stream.attachMic();
+    }
+    $('grantBtn').style.display='none';$('permNext').style.display='flex';
+    Sound.chime();vib(20);
+    toast(App.hasCam&&App.hasMic?'الكاميرا والمايك جاهزين ✓':'تم تفعيل المتاح من الأذونات','ok');
+  },
+  markUI(cam,mic){
+    const set=(el,ok)=>{el.className='permSt '+(ok?'ok':'no');el.innerHTML=ok?'✓':'✕';};
+    set($('permCamSt'),cam);set($('permMicSt'),mic);
+    syncLobby();syncMicCamUI();
+  },
+  async initTracking(){
+    if(App.trackMode==='loading'||App.trackMode==='face')return;
+    App.trackMode='loading';this.trackChip();
+    try{
+      const vision=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+      const files=await vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+      const opts=d=>({baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',delegate:d},
+        outputFaceBlendshapes:true,outputFacialTransformationMatrixes:false,runningMode:'VIDEO',numFaces:1});
+      try{this.lm=await vision.FaceLandmarker.createFromOptions(files,opts('GPU'));}
+      catch(e){this.lm=await vision.FaceLandmarker.createFromOptions(files,opts('CPU'));}
+      App.trackMode='face';this.trackChip();
+      toast('تتبّع الوجه نشط — حرّك رأسك وشوف شخصيتك 🎭','ok',3200);
+    }catch(e){
+      console.warn('tracking unavailable',e);
+      App.trackMode='lite';this.trackChip();
+      toast('التتبّع غير متاح — الشخصية تتفاعل مع صوتك وحركتها الذاتية','info',3400);
+    }
+  },
+  trackChip(){
+    const el=$('trackChip');
+    if(App.trackMode==='face'){el.className='trackChip ok';el.textContent='يتتبع وجهك ✓';}
+    else if(App.trackMode==='loading'){el.className='trackChip load';el.innerHTML='<span class="sp"></span> نحمّل التتبّع…';}
+    else if(App.trackMode==='lite'){el.className='trackChip info';el.textContent='وضع تفاعلي 🎙';}
+    else{el.className='trackChip';el.textContent='بدون كاميرا';}
+    syncLobby();
+  },
+  lastVT:-1,lastDet:0,face:null,
+  detect(now){
+    if(!this.lm||App.trackMode!=='face'||!App.hasCam||!App.camOn)return;
+    if(now-this.lastDet<66)return;
+    const v=$('camFeed');
+    if(v.readyState<2||v.currentTime===this.lastVT)return;
+    this.lastVT=v.currentTime;this.lastDet=now;
+    try{
+      const r=this.lm.detectForVideo(v,now);
+      if(r.faceLandmarks&&r.faceLandmarks[0]){
+        const lm=r.faceLandmarks[0];
+        const bs={};if(r.faceBlendshapes&&r.faceBlendshapes[0])for(const c of r.faceBlendshapes[0].categories)bs[c.categoryName]=c.score;
+        const eyeL=lm[33],eyeR=lm[263],cheekL=lm[234],cheekR=lm[454],nose=lm[1],chin=lm[152];
+        const midX=(cheekL.x+cheekR.x)/2,width=Math.abs(cheekR.x-cheekL.x)+1e-6;
+        const yawRaw=(nose.x-midX)/width;
+        const eyeMidY=(eyeL.y+eyeR.y)/2,h=Math.abs(chin.y-eyeMidY)+1e-6;
+        const pitchRaw=(nose.y-eyeMidY)/h;
+        const rollRaw=Math.atan2(eyeR.y-eyeL.y,eyeR.x-eyeL.x);
+        if(!Pose.neutral){Pose.nSamples.push([yawRaw,pitchRaw,rollRaw]);
+          if(Pose.nSamples.length>=25){const a=Pose.nSamples.reduce((s,v)=>[s[0]+v[0],s[1]+v[1],s[2]+v[2]],[0,0,0]).map(v=>v/25);
+            Pose.neutral={yaw:a[0],pitch:a[1],roll:a[2]};}}
+        this.face={t:now,yawRaw,pitchRaw,rollRaw,bs};
+      }else this.face=null;
+    }catch(e){}
+  },
+  updateLevel(){
+    if(this.analyser&&App.micOn&&App.hasMic){
+      this.analyser.getByteTimeDomainData(this.buf);
+      let s=0;for(let i=0;i<this.buf.length;i+=4){const v=(this.buf[i]-128)/128;s+=v*v;}
+      const rms=Math.sqrt(s/(this.buf.length/4));
+      this.level=lerp(this.level,clamp(rms*3.2,0,1),.35);
+    }else this.level=lerp(this.level,0,.2);
+    if(this.remoteAnalyser){
+      this.remoteAnalyser.getByteTimeDomainData(this.remoteBuf);
+      let s=0;for(let i=0;i<this.remoteBuf.length;i+=4){const v=(this.remoteBuf[i]-128)/128;s+=v*v;}
+      this.remoteLevel=lerp(this.remoteLevel,clamp(Math.sqrt(s/(this.remoteBuf.length/4))*3.4,0,1),.3);
+    }else this.remoteLevel=lerp(this.remoteLevel,0,.2);
+  }
+};
+
+/* pose fusion: tracking → fallback idle, always smooth */
+const Pose={
+  neutral:null,nSamples:[],cur:{yaw:0,pitch:0,roll:0,mouth:0,blinkL:0,blinkR:0,happy:.3,brow:0,wide:0,funnel:0,pucker:0},
+  t:0,autoBlink:0,nextBlink:2.5,
+  update(dt,now){
+    this.t+=dt;
+    const P=Studio.params,sens=P.sens;
+    let tg={yaw:Math.sin(this.t*.35)*.07*P.idle,pitch:Math.sin(this.t*.5)*.03*P.idle,roll:Math.sin(this.t*.28)*.03*P.idle,
+      mouth:0,blinkL:0,blinkR:0,happy:.32,brow:0,wide:0,funnel:0,pucker:0};
+    const f=Cam.face;
+    if(f&&now-f.t<450&&App.camOn){
+      const n=this.neutral||{yaw:f.yawRaw,pitch:f.pitchRaw,roll:f.rollRaw};
+      tg.yaw=clamp(-(f.yawRaw-n.yaw)*2.6*sens,-.7,.7);
+      tg.pitch=clamp((f.pitchRaw-n.pitch)*4.2*sens,-.55,.55);
+      tg.roll=clamp(-(f.rollRaw-n.roll)*1.3*sens,-.5,.5);
+      const b=f.bs;
+      tg.blinkL=clamp((b.eyeBlinkLeft||0)*1.25,0,1);tg.blinkR=clamp((b.eyeBlinkRight||0)*1.25,0,1);
+      tg.mouth=clamp((b.jawOpen||0)*1.5,0,1);
+      tg.happy=clamp(((b.mouthSmileLeft||0)+(b.mouthSmileRight||0))*.75+.15,0,1);
+      tg.brow=clamp((b.browInnerUp||0)*1.2,0,1);
+      tg.wide=clamp(((b.eyeWideLeft||0)+(b.eyeWideRight||0))*.7,0,1);
+      tg.funnel=clamp((b.mouthFunnel||0)*.9,0,1);tg.pucker=clamp((b.mouthPucker||0)*.9,0,1);
+    }else{
+      this.nextBlink-=dt;
+      if(this.nextBlink<=0){this.autoBlink=1;this.nextBlink=rnd(1.9,4.4);}
+      this.autoBlink=Math.max(0,this.autoBlink-dt*7);
+      tg.blinkL=tg.blinkR=this.autoBlink;
+      tg.yaw+=App.dragYaw*.5;tg.pitch+=App.dragPitch*.5;
+    }
+    /* audio lipsync always blends in */
+    tg.mouth=Math.max(tg.mouth,App.micOn?Cam.level*1.15:0);
+    if(tg.mouth>.25)tg.happy=Math.max(tg.happy,.4);
+    const rate=18-P.smooth*14;
+    const a=1-Math.exp(-dt*rate);
+    const fast=1-Math.exp(-dt*22);
+    for(const k in this.cur){
+      const f2=(k==='blinkL'||k==='blinkR'||k==='mouth')?fast:a;
+      this.cur[k]=lerp(this.cur[k],tg[k],f2);
+    }
+    return this.cur;
+  }
+};
+
+/* ================================================================
+   OUTGOING STREAM — canvas capture + mic (auto-sent to peer)
+   ================================================================ */
+const Stream={
+  out:null,vt:null,
+  init(){
+    try{
+      const cs=$('outCanvas').captureStream(30);
+      this.vt=cs.getVideoTracks()[0];
+      this.out=new MediaStream([this.vt]);
+    }catch(e){this.out=new MediaStream();}
+    ['lobbyVid','matchVid','pipVid'].forEach(id=>{const v=$(id);v.srcObject=this.out;v.play().catch(()=>{});});
+  },
+  attachMic(){if(this.out&&App.micTrack&&!this.out.getAudioTracks().includes(App.micTrack)){try{this.out.addTrack(App.micTrack);}catch(e){}}}
+};
+
+/* ================================================================
+   MIC / CAM state sync across all UI
+   ================================================================ */
+function syncMicCamUI(){
+  const mic=App.micOn&&App.hasMic,cam=App.camOn;
+  $('swMic').classList.toggle('on',mic);$('swMic').setAttribute('aria-checked',mic);
+  $('swCam').classList.toggle('on',cam);$('swCam').setAttribute('aria-checked',cam);
+  $('ltMic').classList.toggle('off',!mic);$('ltCam').classList.toggle('off',!cam);
+  $('ltMicIco').innerHTML=`<use href="#i-${mic?'mic':'micx'}"/>`;
+  $('ltCamIco').innerHTML=`<use href="#i-${cam?'cam':'camx'}"/>`;
+  $('btnMic').classList.toggle('off',!mic);$('btnMicIco').innerHTML=`<use href="#i-${mic?'mic':'micx'}"/>`;
+  $('btnCam').classList.toggle('off',!cam);$('btnCamIco').innerHTML=`<use href="#i-${cam?'cam':'camx'}"/>`;
+}
+function setMic(on){
+  App.micOn=on;
+  if(App.micTrack)App.micTrack.enabled=on;
+  syncMicCamUI();syncLobby();Sound.tap();vib(10);
+  if(App.session){App.session.sendState();
+    toast(on?'المايك يعمل 🎙':'تم كتم المايك 🔇','info',1600);}
+}
+function setCam(on){
+  App.camOn=on;syncMicCamUI();Sound.tap();vib(10);
+  if(App.session){App.session.sendState();
+    toast(on?'شخصيتك ظاهرة للطرف الآخر ✨':'أخفيت شخصيتك — يرى بطاقة «الكاميرا مغلقة»','info',2000);}
+}
+$('swMic').addEventListener('click',()=>setMic(!App.micOn));
+$('swCam').addEventListener('click',()=>setCam(!App.camOn));
+$('btnMic').addEventListener('click',()=>setMic(!App.micOn));
+$('btnCam').addEventListener('click',()=>setCam(!App.camOn));
+
+function syncLobby(){
+  $('liPerson').textContent=App.vrmActive?('VRM: '+App.persona):App.persona;
+  const mic=App.micOn&&App.hasMic;
+  $('liMicIco').classList.toggle('off',!mic);
+  $('liMicIco').innerHTML=`<use href="#i-${mic?'check':'x'}"/>`;
+  $('liMicTxt').textContent=mic?'المايك يعمل — صوتك سيصل':'المايك مغلق — يمكنك تفعيله بأي وقت';
+  const face=App.trackMode==='face';
+  $('liTrackIco').classList.toggle('off',!face);
+  $('liTrackIco').innerHTML=`<use href="#i-${face?'check':'idle'}"/>`;
+  $('liTrackTxt').textContent=face?'تتبّع الوجه نشط':(App.trackMode==='lite'?'تفاعل صوتي + حركة ذاتية':'حركة ذاتية + سحب بالإصبع');
+  syncMicCamUI();
+}
+
+/* ================================================================
+   MATCHMAKING — BroadcastChannel real peers + bot fallback
+   ================================================================ */
+const Net={
+  bc:null,seekTimer:null,botTimer:null,statusTimer:null,matchT0:0,acked:false,
+  init(){
+    if('BroadcastChannel' in window){
+      try{this.bc=new BroadcastChannel('sudfa-lobby-v1');
+        this.bc.onmessage=e=>this.onMsg(e.data);}catch(e){}
+    }
+  },
+  post(m){try{this.bc&&this.bc.postMessage(m);}catch(e){}},
+  start(){
+    App.pending=null;this.acked=false;this.matchT0=performance.now();
+    $('matchFlash').classList.remove('show');
+    const statuses=['نبحث عن صدفتك…','نطابق اهتماماتك 🎯','نتحقق من الشخصيات 🎭','نؤمّن الاتصال 🔐','قرّبنا نلقى أحد…'];
+    let si=0;$('matchStatus').textContent=statuses[0];
+    clearInterval(this.statusTimer);
+    this.statusTimer=setInterval(()=>{si=(si+1)%statuses.length;$('matchStatus').textContent=statuses[si];Sound.ring();},1500);
+    this.post({t:'seek',id:App.myId,profile:myProfile()});
+    clearInterval(this.seekTimer);
+    this.seekTimer=setInterval(()=>{if(App.state==='scrMatch'&&!App.pending)this.post({t:'seek',id:App.myId,profile:myProfile()});},1400);
+    clearTimeout(this.botTimer);
+    this.botTimer=setTimeout(()=>{if(App.state==='scrMatch'&&!App.session){if(App.pending)this.post({t:'bye',from:App.myId,to:App.pending});this.matchBot();}},rnd(4500,6500));
+  },
+  stop(){clearInterval(this.seekTimer);clearInterval(this.statusTimer);clearTimeout(this.botTimer);
+    if(App.pending)this.post({t:'bye',from:App.myId,to:App.pending});App.pending=null;},
+  onMsg(m){
+    if(!m||m.from===App.myId)return;
+    if(m.t==='seek'&&App.state==='scrMatch'&&!App.pending&&!App.session){
+      App.pending=m.id;this.peerProfile=m.profile;this.acked=false;
+      this.post({t:'ack',from:App.myId,to:m.id,profile:myProfile()});
+      this.tryStartRTC();
+    }
+    else if(m.t==='ack'&&m.to===App.myId&&App.state==='scrMatch'&&!App.session){
+      if(!App.pending){App.pending=m.from;this.peerProfile=m.profile;this.post({t:'ack',from:App.myId,to:m.from,profile:myProfile()});}
+      if(App.pending===m.from){this.acked=true;this.tryStartRTC();}
+    }
+    else if(m.t==='sig'&&m.to===App.myId&&App.session&&App.session.type==='rtc'&&App.session.peerId===m.from){
+      App.session.onSig(m);
+    }
+    else if(m.t==='bye'&&m.to===App.myId){
+      if(App.session&&App.session.peerId===m.from){App.session.remoteEnded();}
+      else if(App.pending===m.from){App.pending=null;this.acked=false;toast('الطرف الآخر انصرف — نبحث من جديد','info');}
+    }
+  },
+  tryStartRTC(){
+    if(!this.acked||!App.pending||App.session)return;
+    const offerer=App.myId<App.pending;
+    clearTimeout(this.botTimer);
+    const s=new RTCSession(App.pending,offerer,this.peerProfile);
+    App.session=s;s.start();
+    /* safety: if RTC fails, fall back to bot */
+    s.failTimer=setTimeout(()=>{if(App.session===s&&!s.connected){s.cleanup();App.session=null;App.pending=null;
+      if(App.state==='scrMatch')Net.matchBot();}},9000);
+  },
+  matchBot(){
+    if(App.state!=='scrMatch')return;
+    const pool=BOTS.filter(b=>!Store.data.blocked.includes(b.id));
+    const b=pick(pool.length?pool:BOTS);
+    const s=new BotSession(b);App.session=s;
+    this.found(()=>s.start());
+  },
+  found(cb){
+    clearInterval(this.seekTimer);clearInterval(this.statusTimer);clearTimeout(this.botTimer);
+    $('matchFlash').classList.add('show');
+    Sound.chime();vib([30,60,30,60,80]);
+    setTimeout(()=>{go('scrCall');cb&&cb();},900);
+  }
+};
+function myProfile(){return{name:Store.data.name||'ضيف',age:Store.data.age,tags:Store.data.tags,flag:'🌍',country:'',persona:App.persona,vrm:App.vrmActive,pal:App.vrmActive?null:PERSONAS[App.persona]};}
+
+/* ---------------- RTC session (real peer via BC signaling) ---------------- */
+class RTCSession{
+  constructor(peerId,offerer,profile){
+    this.type='rtc';this.peerId=peerId;this.offerer=offerer;this.peerProfile=profile||{name:'ضيف'};
+    this.connected=false;this.timers=[];this.t0=0;this.msgs=0;this.heartsGot=0;this.iceBuf=[];
+    this.makingOffer=false;this.remoteEndedFlag=false;
+  }
+  start(){
+    const pc=this.pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+    for(const tr of Stream.out.getTracks()){try{pc.addTrack(tr,Stream.out);}catch(e){}}
+    pc.onicecandidate=e=>{if(e.candidate)Net.post({t:'sig',from:App.myId,to:this.peerId,kind:'ice',data:e.candidate.toJSON?e.candidate.toJSON():e.candidate});};
+    pc.ontrack=e=>{
+      const st=e.streams[0]||new MediaStream([e.track]);
+      Call.attachRemote(st);
+    };
+    pc.onconnectionstatechange=()=>{
+      const s=pc.connectionState;
+      if(s==='connected'){this.connected=true;clearTimeout(this.failTimer);Call.setConn(4);}
+      else if(s==='disconnected')Call.setConn(2);
+      else if(s==='failed'){Call.setConn(1);if(this.connected)this.remoteEnded();}
+    };
+    if(this.offerer){
+      this.dc=pc.createDataChannel('sudfa');this.bindDC();
+      this.negotiate();
+    }else{
+      pc.ondatachannel=e=>{this.dc=e.channel;this.bindDC();};
+    }
+  }
+  async negotiate(){
+    try{this.makingOffer=true;
+      const o=await this.pc.createOffer();await this.pc.setLocalDescription(o);
+      Net.post({t:'sig',from:App.myId,to:this.peerId,kind:'offer',data:this.pc.localDescription.toJSON?this.pc.localDescription.toJSON():this.pc.localDescription});
+    }catch(e){}finally{this.makingOffer=false;}
+  }
+  async onSig(m){
+    try{
+      if(m.kind==='offer'){
+        await this.pc.setRemoteDescription(m.data);
+        for(const c of this.iceBuf){try{await this.pc.addIceCandidate(c);}catch(e){}}this.iceBuf=[];
+        const a=await this.pc.createAnswer();await this.pc.setLocalDescription(a);
+        Net.post({t:'sig',from:App.myId,to:this.peerId,kind:'answer',data:this.pc.localDescription.toJSON?this.pc.localDescription.toJSON():this.pc.localDescription});
+      }else if(m.kind==='answer'){
+        await this.pc.setRemoteDescription(m.data);
+        for(const c of this.iceBuf){try{await this.pc.addIceCandidate(c);}catch(e){}}this.iceBuf=[];
+      }else if(m.kind==='ice'){
+        if(this.pc.remoteDescription){try{await this.pc.addIceCandidate(m.data);}catch(e){}}
+        else this.iceBuf.push(m.data);
+      }
+    }catch(e){console.warn('sig err',e);}
+  }
+  bindDC(){
+    const dc=this.dc;
+    dc.onopen=()=>{
+      this.send({t:'hello',profile:myProfile()});
+    };
+    dc.onmessage=e=>{
+      let m;try{m=JSON.parse(e.data);}catch(err){return;}
+      if(m.t==='hello'&&!this.connected){
+        this.connected=true;clearTimeout(this.failTimer);
+        this.peerProfile=m.profile;
+        Net.found(()=>Call.begin(this));
+      }
+      else if(m.t==='chat')Call.recvChat(m.text);
+      else if(m.t==='state')Call.peerState(m.mic,m.cam);
+      else if(m.t==='heart')Call.recvHeart();
+      else if(m.t==='typing')Call.peerTyping(m.on);
+      else if(m.t==='bye')this.remoteEnded();
+    };
+    dc.onclose=()=>{if(this.connected&&!this.remoteEndedFlag)this.remoteEnded();};
+  }
+  send(m){try{if(this.dc&&this.dc.readyState==='open')this.dc.send(JSON.stringify(m));}catch(e){}}
+  sendChat(text){this.send({t:'chat',text});}
+  sendState(){this.send({t:'state',mic:App.micOn&&App.hasMic,cam:App.camOn});}
+  sendHeart(){this.send({t:'heart'});}
+  sendTyping(on){this.send({t:'typing',on});}
+  remoteEnded(){if(this.remoteEndedFlag)return;this.remoteEndedFlag=true;
+    if(App.session===this){Call.finish('peer');}}
+  cleanup(){
+    clearTimeout(this.failTimer);this.timers.forEach(clearTimeout);
+    try{this.dc&&this.dc.close();}catch(e){}
+    try{this.pc&&this.pc.close();}catch(e){}
+  }
+}
+
+/* ================================================================
+   BOTS — believable demo partners
+   ================================================================ */
+const BOTS=[
+ {id:'reem',name:'ريم',age:23,flag:'🇸🇦',country:'السعودية',tags:['أنمي','أفلام'],pal:PERSONAS['ريم'],
+  hi:['هلا والله! 👋 أخيراً صدفة حلوة','هاااي ✨ كيفك اليوم؟'],
+  topics:['وش آخر أنمي تابعته؟ أنا مخلّصة ون بيس تقريباً 😅','تحب أفلام الغموض ولا الكوميدي؟','لو عندك تذكرة سفر لأي مكان… وين تروح؟']},
+ {id:'leen',name:'لين',age:21,flag:'🇦🇪',country:'الإمارات',tags:['موسيقى','سفر'],pal:{hair:'#A78BFA',hair2:'#DDD6FE',eye:'#22D3EE',fit:'#1E1B4B',fit2:'#7C3AED',skin:'#FFE0CC',skin2:'#F5BE9E',style:0,acc:'phones'},
+  hi:['هاي هاي 🎧 كنت أدور أحد يسمعني رأيي بأغنية','هلا! جوّك رايق ولا حماسي اليوم؟'],
+  topics:['وش نوع الموسيقى اللي تسمعه قبل النوم؟','أنا عالقة بأغنية من أسبوع 😂 عندك اقتراح؟','أجمل مدينة زرتها بحياتك؟']},
+ {id:'joud',name:'جود',age:26,flag:'🇰🇼',country:'الكويت',tags:['تقنية','ألعاب'],pal:{hair:'#38BDF8',hair2:'#BAE6FD',eye:'#A3E635',fit:'#082F49',fit2:'#0EA5E9',skin:'#F3C6A5',skin2:'#D9A276',style:2,acc:'none'},
+  hi:['هلا هلا 👋 شخصيتك رهيبة btw','أهلين! أول مرة أجرب صدفة… شكلها فكرة حلوة'],
+  topics:['وش تلعب هالفترة؟ أنا مدمن إيلدن رنق 🎮','PC ولا كونسول؟ لا تخرب الصداقة من أول دقيقة 😂','تابع آخر أخبار الذكاء الاصطناعي؟ الدنيا تركض']},
+ {id:'sara',name:'سارة',age:22,flag:'🇪🇬',country:'مصر',tags:['طبخ','أفلام'],pal:{hair:'#FB923C',hair2:'#FED7AA',eye:'#34D399',fit:'#431407',fit2:'#F97316',skin:'#FFD9C4',skin2:'#F3B899',style:1,acc:'pin'},
+  hi:['أهلاً أهلاً 😄 عاملة إيه؟','إزيك! ✨ نورت الصدفة'],
+  topics:['بتعرف تطبخ حاجة ولا أكل دليفري على طول؟ 😂','رشّحلي فيلم أسهر عليه الليلة','أنا بعمل أحلى مكرونة بشاميل في الدنيا، تحدي؟ 🍝']},
+ {id:'dana',name:'دانة',age:25,flag:'🇧🇭',country:'البحرين',tags:['سفر','موسيقى'],pal:{hair:'#F43F5E',hair2:'#FECDD3',eye:'#FFB020',fit:'#4C0519',fit2:'#E11D48',skin:'#FFE0CC',skin2:'#F5BE9E',style:0,acc:'phones'},
+  hi:['هلا فيك 🌹 شخبارك؟','هاي! الصدفة جمعتنا… حلو هالشي'],
+  topics:['لو تقدر تعيش بأي دولة سنة كاملة، وين تختار؟','عندك بلايليست للرواق؟ أبغى أسمع ذوقك','البحر ولا الجبل؟ جاوب صح 😌']},
+ {id:'noura',name:'نورة',age:24,flag:'🇯🇴',country:'الأردن',tags:['أنمي','ألعاب'],pal:{hair:'#34D399',hair2:'#A7F3D0',eye:'#FF2E88',fit:'#052E16',fit2:'#10B981',skin:'#FFD9C4',skin2:'#F3B899',style:2,acc:'cat'},
+  hi:['مرحبااا 🐱 شخصيتي قالت لي إنك شخص مثير للاهتمام','هلا! جاهز لسوالف نص الليل؟'],
+  topics:['أنمي مفضّل عندك؟ إذا قلت أتاك على تيتان بنصير أصحاب فوراً','وش آخر لعبة خلصتها؟ بدون حرق تكفى 😤','قطط ولا كلاب؟ هالسؤال يحدد مستقبل صداقتنا 🐱']},
+ {id:'fahad',name:'فهد',age:27,flag:'🇶🇦',country:'قطر',tags:['رياضة','ألعاب'],pal:{hair:'#CBD5E1',hair2:'#F1F5F9',eye:'#38BDF8',fit:'#0F172A',fit2:'#334155',skin:'#E8B48C',skin2:'#C98F63',style:2,acc:'none'},
+  hi:['هلا والله 👋 شخبارك يا طيب','أهلين! الصدفة اختارتني لك… ذوقها حلو'],
+  topics:['تشجع أي فريق؟ خلنا نتفق إن الكلاسيكو نار 🔥','تلعب باديل؟ صاير مدمن عليها','جيم ولا كورة؟ ولا نوم؟ النوم خيار محترم بصراحة 😂']},
+ {id:'meshal',name:'مشعل',age:24,flag:'🇸🇦',country:'السعودية',tags:['تقنية','أفلام'],pal:{hair:'#64748B',hair2:'#94A3B8',eye:'#FFB020',fit:'#1C1917',fit2:'#78716C',skin:'#D9A066',skin2:'#B97F45',style:0,acc:'phones'},
+  hi:['هلا! 👋 التطبيق هذا فكرة عبقرية والله','أهلين أهلين، كيف الوضع؟'],
+  topics:['أنت من نوع اللي يبرمج ولا اللي يكسر الأجهزة؟ 😂','وش آخر فيلم شفته وقلت واو؟','آيفون ولا أندرويد؟ بهدوء… بدون مشاكل 📱']}
+];
+const norm=s=>s.replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[\u064B-\u0652]/g,'').toLowerCase();
+class BotSession{
+  constructor(bot){
+    this.type='bot';this.bot=bot;this.peerId='bot-'+bot.id;this.timers=[];this.t0=0;this.msgs=0;this.heartsGot=0;
+    this.talk=0;this.happy=.35;this.muteCommented=false;this.camCommented=false;this.proactive=0;this.ended=false;
+    this.cv=document.createElement('canvas');this.cv.width=480;this.cv.height=640;
+    this.avatar=new Avatar2D(this.cv,bot.pal,bot.id.length*2.7);this.avatar.resize(480,640);
+    this.seed=Math.random()*10;this.bt=0;
+  }
+  later(fn,ms){const t=setTimeout(()=>{if(!this.ended&&App.session===this)fn();},ms);this.timers.push(t);return t;}
+  start(){
+    const st=new MediaStream([this.cv.captureStream(24).getVideoTracks()[0]]);
+    Call.attachRemote(st);Call.begin(this);Call.setConn(4);
+    this.later(()=>this.say(pick(this.bot.hi)),1300);
+    const shared=this.bot.tags.filter(t=>Store.data.tags.includes(t));
+    this.later(()=>this.say(shared.length?`شفت إنك تحب ${shared[0]} بعد؟! 😍 أنا كذا` :pick(this.bot.topics)),5200);
+    this.scheduleProactive(14000);
+    this.later(()=>{this.say('سعدت بالكلام معك والله 🌙 لازم أروح… صدفة ثانية؟');
+      this.later(()=>this.remoteEnded(),2600);},rnd(110000,150000));
+    /* react to mute/cam */
+    this.later(()=>this.checkStates(),16000);
+  }
+  scheduleProactive(ms){this.later(()=>{if(this.proactive<5){this.proactive++;this.say(pick(this.bot.topics));this.scheduleProactive(rnd(15000,24000));}},ms);}
+  checkStates(){
+    if(!App.micOn&&!this.muteCommented){this.muteCommented=true;this.say('مايكك مطفي؟ 👀 ولا بس تستحي 😂');}
+    if(!App.camOn&&!this.camCommented){this.camCommented=true;this.say('اختفيت! 😅 رجّع شخصيتك خلني أشوفها');}
+    this.later(()=>this.checkStates(),20000);
+  }
+  say(text){Call.recvTyping(true);
+    this.later(()=>{Call.recvTyping(false);Call.recvChat(text);this.talk=1;},rnd(900,1700));}
+  sendChat(text){
+    const t=norm(text);let reply=null;
+    if(/❤|😍|🌹|حلو|جميل|لطيف|كيوت/.test(t)){this.happy=1;reply=pick(['أووه ستووب 😳❤️','ذوقك حلو والله 🌹','هههه شكراً 😊❤️']);this.later(()=>{Call.recvHeart();},1400);}
+    else if(/هلا|هاي|سلام|مرحبا|اهل/.test(t))reply=pick(['هلا فيك_MORE','يا هلا والله 👋','أهلين! نوّرت']).replace('_MORE',' 😄');
+    else if(/اسمك|اسم/.test(t))reply=`أنا ${this.bot.name} 😊 وأنت ${Store.data.name||'ضيف'} صح؟`;
+    else if(/عمرك|كم عمر/.test(t))reply=`${this.bot.age} 😌 وأنت؟`;
+    else if(/وين|بلد|من اي|ساكن/.test(t))reply=`من ${this.bot.country} ${this.bot.flag} وأنت؟`;
+    else if(/احب|هواي|اهتمام|تلعب|تتابع/.test(t)){const sh=this.bot.tags.filter(x=>Store.data.tags.includes(x));
+      reply=sh.length?`جد؟! أنا بعد أحب ${sh[0]} 🤝 لقينا نقطة مشتركة`:`حلو! أنا اهتمامي ${this.bot.tags.join(' و')} أكثر شي`;}
+    else if(/باي|مع السلام|بروح|لازم اروح/.test(t)){reply='مع السلامة! سعدت فيك 🌙✨';this.later(()=>this.remoteEnded(),2400);}
+    else if(/😂|ههه|لول/.test(t))reply=pick(['هههههه 😂','ضحكتك حلوة 😂','لا تضحكني أكثر 🤣']);
+    else if(/شكرا|مشكور/.test(t))reply=pick(['العفو 😊','تستاهل 🌹','ولا يهمك!']);
+    else reply=pick(['صدقت! كمّل كمّل 👀','هههه حلو، وبعدين؟','وجهة نظر تُحترم 😌 وش رأيك بـ'+pick(this.bot.topics),'مثير للاهتمام! احك لي أكثر']);
+    this.say(reply);
+  }
+  sendState(){}
+  sendHeart(){this.happy=1;this.talk=.6;this.later(()=>{Call.recvHeart();this.happy=1;},rnd(600,1400));}
+  sendTyping(){}
+  update(dt){
+    this.bt+=dt;this.talk=Math.max(0,this.talk-dt*.5);this.happy=lerp(this.happy,.35,dt*.4);
+    const t=this.bt,env=this.talk;
+    const pose={yaw:Math.sin(t*.4+this.seed)*.14,pitch:Math.sin(t*.55+this.seed)*.05,roll:Math.sin(t*.3)*.05,
+      mouth:env*(0.25+0.75*Math.abs(Math.sin(t*11))),blinkL:0,blinkR:0,happy:this.happy,brow:env*.3,wide:0,funnel:0,pucker:0};
+    this.avatar.update(dt,pose);this.avatar.render();
+    return env;
+  }
+  remoteEnded(){if(this.ended)return;this.ended=true;if(App.session===this)Call.finish('peer');}
+  cleanup(){this.ended=true;this.timers.forEach(clearTimeout);}
+}
+
+/* ================================================================
+   CALL UI
+   ================================================================ */
+const Call={
+  remoteStream:null,t0:0,timerInt:null,unread:0,botEnv:0,lastTap:0,
+  attachRemote(st){
+    this.remoteStream=st;
+    $('bigVid').srcObject=App.swapped?Stream.out:st;$('bigVid').play().catch(()=>{});
+    $('pipVid').srcObject=App.swapped?st:Stream.out;$('pipVid').play().catch(()=>{});
+    const aud=$('remoteAud');aud.srcObject=st;
+    aud.play().catch(()=>{$('audioEnable').classList.add('show');});
+    /* remote analyser */
+    try{
+      if(st.getAudioTracks().length&&Sound.ensure()){
+        const src=Sound.ctx.createMediaStreamSource(new MediaStream([st.getAudioTracks()[0]]));
+        Cam.remoteAnalyser=Sound.ctx.createAnalyser();Cam.remoteAnalyser.fftSize=512;
+        src.connect(Cam.remoteAnalyser);Cam.remoteBuf=new Uint8Array(Cam.remoteAnalyser.fftSize);
+        this._remoteSrc=src;
+      }
+    }catch(e){}
+  },
+  begin(session){
+    App.session=session;session.t0=Date.now();this.t0=Date.now();this.unread=0;this.botEnv=0;
+    App.swapped=false;$('scrCall').classList.remove('selfBig');$('pipTag').textContent='أنت';
+    $('bigVid').srcObject=this.remoteStream||Stream.out;$('pipVid').srcObject=Stream.out;
+    $('chatBadge').classList.remove('show');
+    $('chatList').innerHTML='';$('chatSheet').classList.remove('open');$('typing').classList.remove('show');
+    $('audioEnable').classList.remove('show');
+    /* partner UI */
+    const p=session.type==='bot'?session.bot:(session.peerProfile||{name:'ضيف'});
+    const name=p.name||'ضيف';
+    $('partnerName').textContent=name;
+    $('partnerBadge').style.display=session.type==='bot'?'inline-block':'none';
+    const meta=session.type==='bot'?`${p.flag} ${p.country} · ${p.age}`:`${p.flag||'🌍'} ${p.country||'متصل مباشر'}${p.age?' · '+p.age:''}`;
+    $('partnerMeta').textContent=meta;
+    const ptags=p.tags||[];const shared=ptags.filter(t=>Store.data.tags.includes(t));
+    $('partnerShared').textContent=shared.length?`· يشاركك: ${shared.join('، ')}`:'';
+    /* partner avatar thumb */
+    const pal=session.type==='bot'?session.bot.pal:(p.pal||PERSONAS['كاي']);
+    const cv=$('pAvatarCv');const mini=new Avatar2D(cv,pal,7);mini.resize(42,42);
+    const oldP=Studio.params.parts;Studio.params.parts=0;
+    mini.update(.016,{yaw:0,pitch:0,roll:0,mouth:0,blinkL:0,blinkR:0,happy:.6,brow:0});mini.render();
+    Studio.params.parts=oldP;
+    this.lastAfter={name,meta,pal,session};
+    this.peerState(true,true);this.setConn(session.type==='bot'?4:3);
+    syncMicCamUI();
+    this.sysMsg('بدأت المكالمة — شخصيتك ظهرت للطرف الآخر تلقائياً ✓');
+    if(App.hasCam&&App.hasMic&&session.type==='rtc')this.sysMsg('💡 استخدم سماعات لتجنّب الصدى');
+    clearInterval(this.timerInt);
+    this.timerInt=setInterval(()=>{$('callTimer').textContent=fmtT((Date.now()-this.t0)/1000);},500);
+    $('callTimer').textContent='00:00';
+    session.sendState&&session.sendState();
+    Sound.pop();
+  },
+  setConn(n){$('connBars').className='connBars'+(n>=4?'':n>=2?' mid':' low');},
+  peerState(mic,cam){
+    $('pMicSt').classList.toggle('off',!mic);
+    $('pMicIco').innerHTML=`<use href="#i-${mic?'mic':'micx'}"/>`;
+    this._peerMic=mic;
+    if(!cam)this.sysMsg('الطرف الآخر أغلق شخصيته 🎭');
+  },
+  sysMsg(txt){const el=document.createElement('div');el.className='msg sys';el.innerHTML=txt;$('chatList').appendChild(el);this.scrollChat();},
+  addMsg(txt,mine){
+    const el=document.createElement('div');el.className='msg '+(mine?'me':'them');el.textContent=txt;
+    $('chatList').appendChild(el);this.scrollChat();
+    if(!mine){Sound.pop();
+      if(!$('chatSheet').classList.contains('open')){this.unread++;const b=$('chatBadge');b.textContent=this.unread;b.classList.add('show');}
+    }
+  },
+  scrollChat(){$('chatList').scrollTop=$('chatList').scrollHeight;},
+  recvChat(txt){this.addMsg(txt,false);},
+  recvTyping(on){$('typing').classList.toggle('show',on);if(on)this.scrollChat();},
+  peerTyping(on){this.recvTyping(on);},
+  sendChat(txt){
+    txt=txt.trim();if(!txt||!App.session)return;
+    this.addMsg(txt,true);Sound.tap();
+    App.session.msgs++;App.session.sendChat(txt);
+  },
+  recvHeart(){
+    this.burst(rnd(.3,.7),.75,6);Sound.heart();vib(15);
+    if(App.session)App.session.heartsGot++;
+    Store.data.stats.hearts++;Store.save();
+  },
+  sendHeart(x,y){
+    this.burst(x,y,5);Sound.heart();vib(15);
+    if(App.session)App.session.sendHeart();
+    Store.data.stats.hearts++;Store.save();
+  },
+  burst(x,y,n){
+    const layer=$('heartsLayer');const r=layer.getBoundingClientRect();
+    for(let i=0;i<n;i++){
+      const el=document.createElement('div');el.className='fHeart';el.textContent=pick(['❤️','💖','💜','🩷','✨']);
+      el.style.left=(x*r.width+rnd(-24,24))+'px';el.style.top=(y*r.height+rnd(-10,10))+'px';
+      el.style.setProperty('--sx',rnd(-70,70)+'px');el.style.setProperty('--rr',rnd(-40,40)+'deg');
+      el.style.animationDelay=(i*.07)+'s';el.style.fontSize=rnd(20,34)+'px';
+      layer.appendChild(el);setTimeout(()=>el.remove(),2100);
+    }
+  },
+  finish(reason){
+    const s=App.session;if(!s)return;
+    const dur=(Date.now()-this.t0)/1000;
+    const info=this.lastAfter;
+    s.cleanup();App.session=null;this.remoteStream=null;
+    clearInterval(this.timerInt);
+    Cam.remoteAnalyser=null;this._remoteSrc=null;
+    $('remoteAud').srcObject=null;$('bigVid').srcObject=null;$('chatSheet').classList.remove('open');
+    Net.post({t:'bye',from:App.myId,to:s.peerId});
+    Store.data.stats.calls++;Store.data.stats.longest=Math.max(Store.data.stats.longest,Math.round(dur));Store.save();
+    Sound.end();vib([20,50,20]);
+    /* after screen */
+    $('afterTitle').textContent=reason==='next'?'نطوي الصفحة…':'انتهت الصدفة';
+    $('afterNote').textContent=reason==='peer'?'الطرف الآخر أنهى المكالمة — ولا يهمك، الصدفة الجاية أحلى 🌙'
+      :reason==='next'?'جهّز نفسك للقاء جديد ✨'
+      :'لقاء قصير… بس يمكن يترك أثر 🌙';
+    if(info){
+      $('afterPartner').textContent=info.name;$('afterMeta').textContent=info.meta;
+      const cv=$('afterAvatarCv');const mini=new Avatar2D(cv,info.pal||PERSONAS['كاي'],4);mini.resize(52,52);
+      const oldP=Studio.params.parts;Studio.params.parts=0;
+      mini.update(.016,{yaw:0,pitch:0,roll:0,mouth:0,blinkL:0,blinkR:0,happy:.6,brow:0});mini.render();
+      Studio.params.parts=oldP;
+      App.lastAfterId=s.type==='bot'?s.bot.id:null;
+    }
+    $('reportLink').style.display=App.lastAfterId?'flex':'none';
+    $('afterDur').textContent=fmtT(dur);
+    $('statCalls').textContent=arNum(Store.data.stats.calls);
+    $('statLong').textContent=fmtT(Store.data.stats.longest);
+    $('statHearts').textContent=arNum(Store.data.stats.hearts);
+    document.querySelectorAll('.rateBtn').forEach(b=>b.classList.remove('on'));
+    if(reason==='next'){go('scrMatch');Net.start();}
+    else go('scrAfter');
+  }
+};
+
+/* call controls */
+$('btnEnd').addEventListener('click',()=>{Sound.tap();Call.finish('me');});
+$('btnNext').addEventListener('click',()=>{Sound.tap();vib(15);Call.finish('next');});
+$('btnChat').addEventListener('click',()=>{Sound.tap();$('chatSheet').classList.add('open');
+  Call.unread=0;$('chatBadge').classList.remove('show');Call.scrollChat();setTimeout(()=>$('chatInput').focus(),350);});
+$('chatClose').addEventListener('click',()=>{$('chatSheet').classList.remove('open');Sound.tap();});
+$('chatSend').addEventListener('click',()=>{Call.sendChat($('chatInput').value);$('chatInput').value='';});
+$('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'){Call.sendChat($('chatInput').value);$('chatInput').value='';}});
+let typT=null;
+$('chatInput').addEventListener('input',()=>{
+  if(App.session&&App.session.type==='rtc'){App.session.sendTyping(true);clearTimeout(typT);typT=setTimeout(()=>App.session&&App.session.sendTyping(false),1200);}
+});
+$('quickRow').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  const q=b.dataset.q;
+  if(q==='❤️'){Call.sendHeart(.5,.7);}
+  Call.sendChat(q);
+}));
+$('audioEnable').addEventListener('click',()=>{$('remoteAud').play().then(()=>$('audioEnable').classList.remove('show')).catch(()=>{});Sound.resume();});
+
+/* double-tap hearts + tap guard on big video area */
+$('scrCall').addEventListener('pointerup',e=>{
+  if(e.target.closest('.callCtrls,.chatSheet,.pip,.partnerCard,.topbar,.audioEnable,.coach'))return;
+  const now=performance.now();
+  const r=$('scrCall').getBoundingClientRect();
+  if(now-Call.lastTap<320){Call.sendHeart((e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height);Call.lastTap=0;}
+  else Call.lastTap=now;
+});
+
+/* PIP drag + swap */
+(function(){
+  const pip=$('pip');let drag=false,moved=0,sx=0,sy=0,ox=0,oy=0;
+  pip.addEventListener('pointerdown',e=>{drag=true;moved=0;sx=e.clientX;sy=e.clientY;
+    const r=pip.getBoundingClientRect(),pr=$('scrCall').getBoundingClientRect();
+    ox=r.left-pr.left;oy=r.top-pr.top;pip.classList.remove('snap');pip.setPointerCapture(e.pointerId);e.stopPropagation();});
+  pip.addEventListener('pointermove',e=>{if(!drag)return;
+    const dx=e.clientX-sx,dy=e.clientY-sy;moved=Math.max(moved,Math.abs(dx)+Math.abs(dy));
+    const pr=$('scrCall').getBoundingClientRect();
+    pip.style.left=clamp(ox+dx,8,pr.width-pip.offsetWidth-8)+'px';
+    pip.style.top=clamp(oy+dy,70,pr.height-pip.offsetHeight-100)+'px';e.stopPropagation();});
+  const up=e=>{if(!drag)return;drag=false;
+    if(moved<7){ /* tap → swap */
+      App.swapped=!App.swapped;$('scrCall').classList.toggle('selfBig',App.swapped);
+      $('pipTag').textContent=App.swapped?'الطرف الآخر':'أنت';
+      $('bigVid').srcObject=App.swapped?Stream.out:(Call.remoteStream||Stream.out);
+      $('pipVid').srcObject=App.swapped?(Call.remoteStream||Stream.out):Stream.out;
+      $('bigVid').play().catch(()=>{});$('pipVid').play().catch(()=>{});Sound.tap();vib(10);
+    }else{ /* snap to nearest corner */
+      const pr=$('scrCall').getBoundingClientRect();
+      const x=parseFloat(pip.style.left),y=parseFloat(pip.style.top);
+      const nx=x<pr.width/2?14:pr.width-pip.offsetWidth-14;
+      const ny=y<pr.height/2?90:pr.height-pip.offsetHeight-110;
+      pip.classList.add('snap');pip.style.left=nx+'px';pip.style.top=ny+'px';
+    }};
+  pip.addEventListener('pointerup',up);pip.addEventListener('pointercancel',up);
+})();
+
+/* ================================================================
+   HOME / PERMS / LOBBY / MATCH / AFTER wiring
+   ================================================================ */
+$('nameInput').value=Store.data.name||'';
+function homeValidate(){
+  const ok=$('nameInput').value.trim().length>=2&&Store.data.adult;
+  $('homeCta').disabled=!ok;
+}
+$('nameInput').addEventListener('input',()=>{Store.data.name=$('nameInput').value.trim();Store.save();homeValidate();});
+$('adultTgl').classList.toggle('on',Store.data.adult);
+$('adultTgl').addEventListener('click',()=>{Store.data.adult=!Store.data.adult;Store.save();
+  $('adultTgl').classList.toggle('on',Store.data.adult);$('adultTgl').setAttribute('aria-checked',Store.data.adult);Sound.tap();homeValidate();});
+document.querySelectorAll('#ageChips .chip').forEach(b=>{
+  if(b.dataset.age===Store.data.age)b.classList.add('on');
+  b.addEventListener('click',()=>{const on=b.classList.contains('on');
+    document.querySelectorAll('#ageChips .chip').forEach(x=>x.classList.remove('on'));
+    if(!on){b.classList.add('on');Store.data.age=b.dataset.age;}else Store.data.age='';
+    Store.save();Sound.tap();});
+});
+document.querySelectorAll('#tagChips .chip').forEach(b=>{
+  if(Store.data.tags.includes(b.dataset.tag))b.classList.add('on');
+  b.addEventListener('click',()=>{
+    const t=b.dataset.tag,i=Store.data.tags.indexOf(t);
+    if(i>=0){Store.data.tags.splice(i,1);b.classList.remove('on');}
+    else{if(Store.data.tags.length>=3){toast('اختر ٣ اهتمامات كحد أقصى','warn');$('.shake');b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),450);return;}
+      Store.data.tags.push(t);b.classList.add('on');}
+    Store.save();Sound.tap();});
+});
+homeValidate();
+$('homeCta').addEventListener('click',()=>{
+  if($('homeCta').disabled){$('nameInput').classList.add('shake');setTimeout(()=>$('nameInput').classList.remove('shake'),450);return;}
+  Sound.tap();go('scrPerms');
+});
+$('grantBtn').addEventListener('click',()=>Cam.request());
+$('permNext').addEventListener('click',()=>{Sound.tap();go('scrStudio');});
+$('permSkip').addEventListener('click',()=>{Sound.tap();toast('لا بأس — شخصيتك تتحرك ذاتياً وتتفاعل مع السحب 👆','info',3000);go('scrStudio');});
+$('studioNext').addEventListener('click',()=>{Sound.chime();go('scrLobby');});
+$('lobbyCta').addEventListener('click',()=>{Sound.tap();vib(20);go('scrMatch');Net.start();});
+$('matchCancel').addEventListener('click',()=>{Sound.tap();Net.stop();go('scrLobby');});
+$('afterNew').addEventListener('click',()=>{Sound.tap();go('scrMatch');Net.start();});
+$('afterHome').addEventListener('click',()=>{Sound.tap();go('scrHome');});
+document.querySelectorAll('.rateBtn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.rateBtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  Sound.pop();vib(15);toast(b.dataset.rate==='love'?'سعدنا إنها عجبتك 😍':'شكراً لتقييمك 🙏','ok');
+}));
+/* report */
+let reason='';
+$('reportLink').addEventListener('click',()=>{reason='';$('reportSend').disabled=true;
+  document.querySelectorAll('#reasonChips .chip').forEach(x=>x.classList.remove('on'));
+  $('scrim').classList.add('show');$('reportSheet').classList.add('open');Sound.tap();});
+const closeReport=()=>{$('scrim').classList.remove('show');$('reportSheet').classList.remove('open');};
+$('reportCancel').addEventListener('click',closeReport);$('scrim').addEventListener('click',closeReport);
+document.querySelectorAll('#reasonChips .chip').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#reasonChips .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  reason=b.dataset.r;$('reportSend').disabled=false;Sound.tap();}));
+$('reportSend').addEventListener('click',()=>{
+  if(App.lastAfterId&&!Store.data.blocked.includes(App.lastAfterId)){Store.data.blocked.push(App.lastAfterId);Store.save();}
+  closeReport();Sound.end();toast('تم الحظر والإبلاغ — لن يظهر لك مجدداً 🛡','ok',3000);
+  $('reportLink').style.display='none';
+});
+
+/* online counter + ticker */
+setInterval(()=>{
+  App.online=clamp(App.online+Math.round(rnd(-14,16)),860,1980);
+  $('onlineCount').textContent=arNum(App.online);
+},4000);
+const TICKS=['ريم 🇸🇦 التقت بمشعل 🇰🇼 قبل ٢ دقيقة','لين 🇦🇪 وفهد 🇶🇦 صاروا أصحاب 🎧','جود 🇰🇼 لقيت أحد يحب نفس اللعبة 🎮','نورة 🇯🇴 وسارة 🇪🇬 سهرانين يسولفون 🌙','دانة 🇧🇭 أرسلت ١٢ قلب في مكالمتها ❤️','كاي التقى بشخص يتكلم ياباني! 🇯🇵','٤٢٣ صدفة صارت آخر ساعة ✨'];
+let tickI=0;
+setInterval(()=>{
+  const el=$('tickerTxt');el.style.opacity=0;
+  setTimeout(()=>{tickI=(tickI+1)%TICKS.length;el.textContent=TICKS[tickI];el.style.opacity=1;},420);
+},5200);
+
+/* ================================================================
+   MASTER LOOP — single rAF drives everything
+   ================================================================ */
+let running=false,raf=0,last=0,frame=0,uiT=0;
+function tick(ts){
+  if(!running)return;
+  raf=requestAnimationFrame(tick);
+  const dt=clamp((ts-last)/1000,0,.05);last=ts;frame++;
+  Cam.updateLevel();
+  if(frame%3===0)Cam.detect(ts);
+  const pose=Pose.update(dt,ts);
+  if(App.streamLive)Studio.frame(dt,pose);
+  /* bot video + waveform */
+  let env=0;
+  if(App.session&&App.session.type==='bot'&&App.state==='scrCall')env=App.session.update(dt);
+  const lv=App.session&&App.session.type==='bot'?env:Cam.remoteLevel;
+  if(App.state==='scrCall'){
+    const bars=$('pWave').children;
+    for(let i=0;i<bars.length;i++)bars[i].style.setProperty('--lv',clamp(lv*(0.5+Math.abs(Math.sin(ts*.012+i*1.7))),0,1).toFixed(2));
+  }
+  /* mic meter on perms */
+  if(App.state==='scrPerms'&&App.hasMic){
+    const bars=$('micMeter').children;
+    for(let i=0;i<bars.length;i++){
+      const v=clamp(Cam.level*(0.35+Math.abs(Math.sin(ts*.011+i*2.1)))*1.4,0.06,1);
+      bars[i].style.height=(v*100)+'%';
+    }
+  }
+  /* match timer */
+  if(App.state==='scrMatch'&&ts-uiT>400){uiT=ts;$('matchTime').textContent=fmtT((ts-Net.matchT0)/1000);}
+}
+function startLoop(){if(running)return;running=true;last=performance.now();raf=requestAnimationFrame(tick);}
+function stopLoop(){running=false;cancelAnimationFrame(raf);}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){stopLoop();if(Sound.ctx)Sound.ctx.suspend().catch(()=>{});}
+  else{startLoop();if(Sound.ctx&&!Sound.muted)Sound.ctx.resume().catch(()=>{});}
+});
+window.addEventListener('beforeunload',()=>{
+  try{App.session&&App.session.cleanup();}catch(e){}
+  try{Net.bc&&Net.bc.close();}catch(e){}
+  try{App.mediaStream&&App.mediaStream.getTracks().forEach(t=>t.stop());}catch(e){}
+});
+window.addEventListener('resize',()=>{if(App.state==='scrStudio')Studio.resize();});
+
+/* ---------------- boot ---------------- */
+Studio.init();
+Stream.init();
+Net.init();
+Cam.trackChip();
+syncLobby();
+startLoop();
+</script>
+</body>
+</html>
