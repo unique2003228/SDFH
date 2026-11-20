@@ -940,31 +940,51 @@ class VRM3{
   size(w,h){if(!this.r)return;this.r.setPixelRatio(DPR());this.r.setSize(w,h,false);this.cam.aspect=w/h;this.cam.updateProjectionMatrix()}
   ik(arm,target,hint){
     const{T}=this.M,V=T.Vector3,Q=T.Quaternion;
-    const Sp=new V();arm.up.getWorldPosition(Sp);
-    const L=arm.L1+arm.L2;
+    // Work from bind pose each frame
+    arm.up.quaternion.identity();
+    arm.lo.quaternion.identity();
+    if(arm.ha)arm.ha.quaternion.identity();
+    arm.up.updateMatrixWorld(true);
+    arm.lo.updateMatrixWorld(true);
+    const Sp=new V(),Ep0=new V(),Wp0=new V();
+    arm.up.getWorldPosition(Sp);
+    arm.lo.getWorldPosition(Ep0);
+    (arm.ha||arm.lo).getWorldPosition(Wp0);
+    // Live rest directions from current bind world positions
+    const ru=Ep0.clone().sub(Sp);const ruLen=ru.length()||1;ru.multiplyScalar(1/ruLen);
+    const rl=Wp0.clone().sub(Ep0);const rlLen=rl.length()||1;rl.multiplyScalar(1/rlLen);
+    const L1=arm.L1,L2=arm.L2,L=L1+L2;
     let dv=target.clone().sub(Sp);
     let dist=dv.length();
     if(dist<1e-5)return;
-    // Allow fuller range of motion (raise arms, reach forward/side)
-    dist=cl(dist,L*.22,L*.98);
+    dist=cl(dist,L*0.2,L*0.98);
     const n=dv.normalize();
     const Tg=Sp.clone().add(n.clone().multiplyScalar(dist));
-    const a=(arm.L1*arm.L1-arm.L2*arm.L2+dist*dist)/(2*dist);
-    const h=Math.sqrt(Math.max(arm.L1*arm.L1-a*a,0));
+    const a=(L1*L1-L2*L2+dist*dist)/(2*dist);
+    const hh=Math.sqrt(Math.max(L1*L1-a*a,0));
     let bh=hint.clone();
     bh.sub(n.clone().multiplyScalar(bh.dot(n)));
-    if(bh.lengthSq()<1e-6){
-      bh.set(arm.sg*.55,-.8,-.25);
-      bh.sub(n.clone().multiplyScalar(n.dot(bh)));
-    }
+    if(bh.lengthSq()<1e-6){bh.set(arm.sg*0.55,-0.8,-0.25);bh.sub(n.clone().multiplyScalar(n.dot(bh)))}
     if(bh.lengthSq()<1e-6)bh.set(0,-1,0);
     bh.normalize();
-    const E=Sp.clone().add(n.clone().multiplyScalar(a)).add(bh.multiplyScalar(h));
-    const qU=new Q().setFromUnitVectors(arm.ru,E.clone().sub(Sp).normalize());
-    const pq=new Q();arm.up.parent.getWorldQuaternion(pq);
-    arm.up.quaternion.copy(pq.invert().multiply(qU));
-    const qL=new Q().setFromUnitVectors(arm.rl,Tg.clone().sub(E).normalize());
-    arm.lo.quaternion.copy(qU.clone().invert().multiply(qL));
+    const E=Sp.clone().add(n.clone().multiplyScalar(a)).add(bh.multiplyScalar(hh));
+    // Upper arm world rotation
+    const toE=E.clone().sub(Sp).normalize();
+    const qUW=new Q().setFromUnitVectors(ru,toE);
+    const pUp=new Q();arm.up.parent.getWorldQuaternion(pUp);
+    arm.up.quaternion.copy(pUp.clone().invert().multiply(qUW));
+    arm.up.updateMatrixWorld(true);
+    // Lower arm: recompute rest dir after upper moved
+    arm.lo.quaternion.identity();
+    arm.lo.updateMatrixWorld(true);
+    const Ep1=new V(),Wp1=new V();
+    arm.lo.getWorldPosition(Ep1);
+    (arm.ha||arm.lo).getWorldPosition(Wp1);
+    const rl2=Wp1.clone().sub(Ep1).normalize();
+    const toW=Tg.clone().sub(E).normalize();
+    const qLW=new Q().setFromUnitVectors(rl2,toW);
+    const pLo=new Q();arm.lo.parent.getWorldQuaternion(pLo);
+    arm.lo.quaternion.copy(pLo.clone().invert().multiply(qLW));
   }
   step(dt,ex){
     if(!this.ok)return;const{T}=this.M,V=T.Vector3,v=this.v,B=this.bones,t=this.t+=dt,id=P.idle,bd=P.bodyOn?P.body:0;
@@ -980,32 +1000,56 @@ class VRM3{
     if(B.head)B.head.rotation.set(pit*.65+Math.sin(t*1.1)*.008*id,yaw*.65,rl*.7);
     if(this.arms)for(const s of['left','right']){
       const arm=this.arms[s];if(!arm)continue;
-      const tr=Body.arm[s==='left'?'l':'r']; // fix: Body uses l/r keys
+      const tr=Body.arm[s==='left'?'l':'r'];
       const L=arm.L1+arm.L2;
       const Sp=new V();arm.up.getWorldPosition(Sp);
       let tg,hint;
+      // Natural rest: arms slightly out, mostly down, a bit forward (A-pose-ish, not T-pose)
+      const restX=arm.sg*L*0.22, restY=-L*0.92, restZ=L*0.06;
       if(P.handOn&&tr&&tr.on){
-        // Map MediaPipe local coords to character space (forward = -Z for VRM)
-        tg=Sp.clone().add(new V(tr.x*this.sep*P.reach, tr.y*this.sep*P.reach, tr.z*this.sep*P.reach));
-        hint=new V(tr.ex, tr.ey, tr.ez);
+        // tr.x/y/z are in shoulder-widths; scale to arm length for natural reach
+        const scale=L*0.95*P.reach;
+        const ox=cl(tr.x,-1.6,1.6)*scale;
+        const oy=cl(tr.y,-1.5,1.2)*scale;
+        const oz=cl(tr.z,-0.8,1.4)*scale;
+        tg=Sp.clone().add(new V(ox, oy, oz));
+        // Elbow hint: prefer outward + slightly back so elbows don't collapse inward
+        hint=new V(
+          (tr.ex||0)+arm.sg*0.45,
+          (tr.ey||0)-0.6,
+          (tr.ez||0)-0.2
+        );
       }else{
-        tg=Sp.clone().add(new V(arm.sg*L*.18+Math.sin(t*.9+arm.sg)*.02*id,-L*.88,L*.12+Math.sin(t*.7)*.015*id));
-        hint=new V(arm.sg*.55,-1,-.25);
+        tg=Sp.clone().add(new V(
+          restX+Math.sin(t*.9+arm.sg)*.015*id*L,
+          restY,
+          restZ+Math.sin(t*.7)*.012*id*L
+        ));
+        hint=new V(arm.sg*0.6,-0.9,-0.2);
       }
-      const al=1-Math.exp(-dt*((tr&&tr.on)?14:5));
+      const al=1-Math.exp(-dt*((tr&&tr.on)?12:4));
       arm.tgt.lerp(tg,al);
-      const hn=hint.clone();if(hn.lengthSq()>1e-8)hn.normalize();else hn.set(arm.sg*.5,-1,-.25);
+      const hn=hint.clone();
+      if(hn.lengthSq()>1e-8)hn.normalize();else hn.set(arm.sg*0.5,-1,-0.2);
       arm.elb.lerp(hn,al);
       this.ik(arm,arm.tgt,arm.elb);
-      const tc=(P.handOn&&tr&&tr.on)?tr.curl:[.12,.12,.12,.12,.12];
+      const tc=(P.handOn&&tr&&tr.on)?tr.curl:[0.08,0.08,0.08,0.08,0.08];
       for(let i=0;i<5;i++)arm.curl[i]=lp(arm.curl[i],tc[i],al);
-      arm.fingers.forEach((ch,fi)=>ch.forEach((bn,bi)=>{const am=[.85,.95,.65][bi]||.65;
-        // VRM0/1 finger axis can differ; use both z and x for better curl
-        bn.rotation.z=-arm.sg*arm.curl[fi]*am*(fi===0?.45:1);
-        if(fi===0){bn.rotation.y=arm.sg*arm.curl[0]*.3;bn.rotation.x=-arm.curl[0]*.15}
-        else{bn.rotation.x=-arm.curl[fi]*am*.25}
+      arm.fingers.forEach((ch,fi)=>ch.forEach((bn,bi)=>{
+        if(!bn)return;
+        const am=[0.9,1.0,0.7][bi]||0.7;
+        const c=arm.curl[fi]*am;
+        // VRM humanoid fingers primarily curl around local Z (with side sign)
+        bn.rotation.set(0,0,0);
+        bn.rotation.z=-arm.sg*c*(fi===0?0.5:1);
+        if(fi===0){bn.rotation.y=arm.sg*c*0.35;bn.rotation.x=-c*0.2}
+        else{bn.rotation.x=-c*0.15}
       }));
-      if(arm.ha){arm.palm=lp(arm.palm,(P.handOn&&tr&&tr.on)?tr.palm:0,al);arm.ha.rotation.y=arm.sg*arm.palm*.35;arm.ha.rotation.x=-arm.palm*.1}
+      if(arm.ha){
+        arm.palm=lp(arm.palm,(P.handOn&&tr&&tr.on)?(tr.palm||0):0,al);
+        arm.ha.rotation.y=arm.sg*arm.palm*0.3;
+        arm.ha.rotation.x=-arm.palm*0.08;
+      }
     }
     const em=v.expressionManager;
     if(em){const set=(n,x)=>{try{if(em.getExpression&&em.getExpression(n))em.setValue(n,cl(x,0,1))}catch(e){}};
@@ -1286,20 +1330,25 @@ const Body={
     const o={};[11,12,13,14,15,16,23,24].forEach(i=>o[i]=S2(i));
     this.raw={t:now,L:o,sep,b};
     const map=(side)=>{
-      // MediaPipe: 11=L shoulder, 12=R shoulder, 13=L elbow, 14=R elbow, 15=L wrist, 16=R wrist
+      // MediaPipe: 11=L-shoulder 12=R-shoulder 13=L-elbow 14=R-elbow 15=L-wrist 16=R-wrist (person anatomical)
       const si=side==='l'?11:12,ei=side==='l'?13:14,wi=side==='l'?15:16;
       const s=o[si],e=o[ei],w=o[wi];
-      const vis=Math.min(s.visibility!==undefined?s.visibility:1,w.visibility!==undefined?w.visibility:1);
+      const vis=Math.min(s.visibility!==undefined?s.visibility:1,w.visibility!==undefined?w.visibility:1,e.visibility!==undefined?e.visibility:1);
       const A2=side==='l'?this.arm.l:this.arm.r;
-      if(vis<.4){A2.on=false;return}
-      const k=1/Math.max(this.raw.sep,0.05);
-      // Shoulder-relative direction of wrist (x right, y down in image → convert for 3D)
-      A2.x=(w.x-s.x)*k*(side==='l'?1:-1); // flip so left arm goes left from character view
-      A2.y=-(w.y-s.y)*k;                   // image y-down → world y-up
-      A2.z=-(w.z-s.z)*k*1.1;                // depth toward camera is negative z in VRM
-      A2.ex=(e.x-s.x)*k*(side==='l'?1:-1);
-      A2.ey=-(e.y-s.y)*k;
-      A2.ez=-(e.z-s.z)*k*1.1;
+      if(vis<.35){A2.on=false;return}
+      const sep=Math.max(this.raw.sep,0.06);
+      // Image space: +x right, +y down, more-negative z = closer to camera
+      // Character space (VRM facing +Z toward camera): +x right, +y up, +z toward camera
+      // Front camera: person's anatomical left appears on the RIGHT of the image, but landmark indices
+      // stay anatomical — so left landmarks still drive left arm; only the axis signs need fixing.
+      const dx=(w.x-s.x)/sep;
+      const dy=(w.y-s.y)/sep;
+      const dz=(w.z-s.z)/sep;
+      A2.x = dx;           // keep lateral direction from image (works with anatomical indices)
+      A2.y = -dy;          // image down → character down (negative Y)
+      A2.z = -dz;          // closer (dz more neg) → +Z toward camera
+      const edx=(e.x-s.x)/sep, edy=(e.y-s.y)/sep, edz=(e.z-s.z)/sep;
+      A2.ex=edx; A2.ey=-edy; A2.ez=-edz;
       const len=Math.hypot(A2.ex,A2.ey,A2.ez)||1;A2.ex/=len;A2.ey/=len;A2.ez/=len;
       A2.on=true;A2.seen=now;
     };
@@ -1375,9 +1424,26 @@ const Audio={an:null,buf:null,level:0,ran:null,rbuf:null,rlevel:0,
 
 /* ---------- outgoing ---------- */
 const Out={s:null,
-  init(){try{this.s=new MediaStream([$('out').captureStream(30).getVideoTracks()[0]])}catch(e){this.s=new MediaStream()}
-    ['rv','sv','pipv'].forEach(i=>{const v=$(i);v.srcObject=this.s;v.play().catch(()=>{})})},
-  mic(){if(this.s&&A.micTrack&&!this.s.getAudioTracks().includes(A.micTrack)){try{this.s.addTrack(A.micTrack)}catch(e){}}}
+  init(){
+    if(this.s&&this.s.getVideoTracks().length){
+      ['rv','sv','pipv'].forEach(i=>{const v=$(i);if(v.srcObject!==this.s){v.srcObject=this.s;v.play().catch(()=>{})}});
+      return;
+    }
+    try{
+      const cs=$('out').captureStream(30);
+      const vt=cs.getVideoTracks()[0];
+      this.s=new MediaStream(vt?[vt]:[]);
+    }catch(e){this.s=new MediaStream()}
+    ['rv','sv','pipv'].forEach(i=>{const v=$(i);v.srcObject=this.s;v.play().catch(()=>{})});
+    this.mic();
+  },
+  mic(){
+    if(!this.s||!A.micTrack)return;
+    const existing=this.s.getAudioTracks();
+    if(existing.includes(A.micTrack))return;
+    existing.forEach(t=>{try{this.s.removeTrack(t)}catch(e){}});
+    try{this.s.addTrack(A.micTrack)}catch(e){}
+  }
 };
 function syncToggles(){const m=A.mic&&A.hasMic,c=A.cam;
   $('swMic').classList.toggle('on',m);$('swCam').classList.toggle('on',c);
@@ -1436,23 +1502,48 @@ const Net={
   msg(m){
     if(!m||m.from===ME.id)return;
     if(m.t==='hb'){this.peers.set(m.from,{at:Date.now(),seek:!!m.seeking});this.count()}
-    else if(m.t==='bye'&&m.to===ME.id){if(A.sess&&A.sess.peer===m.from)A.sess.ended();else if(this.pend===m.from){this.pend=null;this.ack=false}}
+    else if(m.t==='bye'&&m.to===ME.id){if(A.sess&&A.sess.peer===m.from)A.sess.ended();else if(this.pend===m.from){this.pend=null;this.ack=false;this.earlySig=[]}}
     else if(m.t==='seek'){
       this.peers.set(m.from,{at:Date.now(),seek:true});this.count();
       if(this.seek&&!this.paused&&!this.pend&&!A.sess&&!(DB.d.blocked||[]).includes(m.uid)){
-        this.pend=m.from;this.pp=m.profile;this.ack=false;this.post({t:'ack',to:m.from,profile:profile()});this.rtc()}
-      else if(this.pend&&this.pend!==m.from)this.post({t:'busy',to:m.from})}
+        this.pend=m.from;this.pp=m.profile||m;this.ack=false;
+        this.post({t:'ack',to:m.from,profile:profile()});
+        // Create session immediately as answerer-side candidate; offerer decided by id compare once mutual
+        this.rtc(false);
+      }else if(this.pend&&this.pend!==m.from)this.post({t:'busy',to:m.from})}
     else if(m.t==='ack'&&m.to===ME.id&&this.seek&&!A.sess){
-      if(!this.pend){this.pend=m.from;this.pp=m.profile;this.post({t:'ack',to:m.from,profile:profile()})}
-      if(this.pend===m.from){this.ack=true;this.rtc()}}
-    else if(m.t==='busy'&&m.to===ME.id&&this.pend===m.from&&!this.ack)this.pend=null;
-    else if(m.t==='sig'&&m.to===ME.id&&A.sess&&A.sess.peer===m.from)A.sess.sig(m);
+      if(!this.pend){this.pend=m.from;this.pp=m.profile||m;this.post({t:'ack',to:m.from,profile:profile()})}
+      if(this.pend===m.from){this.ack=true;this.rtc(true)}}
+    else if(m.t==='ack'&&m.to===ME.id&&this.seek&&A.sess&&A.sess.peer===m.from){
+      this.ack=true;
+    }
+    else if(m.t==='busy'&&m.to===ME.id&&this.pend===m.from&&!this.ack){this.pend=null;this.earlySig=[]}
+    else if(m.t==='sig'&&m.to===ME.id){
+      if(A.sess&&A.sess.peer===m.from)A.sess.sig(m);
+      else if(this.pend===m.from||(!this.pend&&this.seek)){
+        // Buffer early offers/ICE that arrive before Session exists
+        if(!this.earlySig)this.earlySig=[];
+        this.earlySig.push(m);
+        if(this.earlySig.length>40)this.earlySig.shift();
+        if(!A.sess&&this.pend===m.from)this.rtc(true);
+      }
+    }
   },
-  rtc(){if(!this.ack||!this.pend||A.sess)return;clearTimeout(this.ti);
-    const s=new Session(this.pend,ME.id<this.pend,this.pp);A.sess=s;s.start();
-    s.fail=setTimeout(()=>{if(A.sess===s&&!s.ready){s.kill();A.sess=null;this.pend=null;this.ack=false;
-      if(this.seek&&!this.paused){this.broadcast();this.arm()}}},22000)},
-  start(){this.seek=true;this.paused=false;this.keep=false;this.pend=null;this.ack=false;this.t0=performance.now();
+  rtc(force){
+    if(A.sess||!this.pend)return;
+    if(!force&&!this.ack)return;
+    clearTimeout(this.ti);
+    const offerer=ME.id<this.pend;
+    const s=new Session(this.pend,offerer,this.pp);A.sess=s;s.start();
+    // Flush any signals that arrived early
+    if(this.earlySig&&this.earlySig.length){
+      const buf=this.earlySig.slice();this.earlySig=[];
+      buf.forEach(m=>{if(m.from===this.pend)s.sig(m)});
+    }
+    s.fail=setTimeout(()=>{if(A.sess===s&&!s.ready){s.kill();A.sess=null;this.pend=null;this.ack=false;this.earlySig=[];
+      if(this.seek&&!this.paused){this.broadcast();this.arm()}}},20000);
+  },
+  start(){this.seek=true;this.paused=false;this.keep=false;this.pend=null;this.ack=false;this.earlySig=[];this._foundLock=false;this.t0=performance.now();
     $('flash').classList.remove('on');$('none').classList.remove('on');
     const tx=['جارٍ البحث…','نبحث عن شخص متصل…','لحظات…'];let i=0;
     $('sst').textContent=this.on?tx[0]:'الاتصال بالشبكة…';
@@ -1469,7 +1560,7 @@ const Net={
   resume(keep){$('none').classList.remove('on');this.paused=false;this.keep=!!keep;this.pend=null;this.ack=false;
     if(this.on){this.broadcast();this.arm();this.hb()}else{this.connect();clearTimeout(this.ti);this.ti=setTimeout(()=>{if(!this.on)this.none('net')},11000)}},
   stop(){this.seek=false;this.paused=false;clearInterval(this.si2);clearInterval(this.st);clearTimeout(this.ti);
-    if(this.pend)this.post({t:'bye',to:this.pend});this.pend=null;this.ack=false;this.hb();$('none').classList.remove('on')},
+    if(this.pend)this.post({t:'bye',to:this.pend});this.pend=null;this.ack=false;this.earlySig=[];this._foundLock=false;this.hb();$('none').classList.remove('on')},
   found(){
     if(this._foundLock)return;this._foundLock=true;
     clearInterval(this.si2);clearInterval(this.st);clearTimeout(this.ti);this.seek=false;this.hb();
@@ -1486,43 +1577,92 @@ $('net').addEventListener('click',()=>{S.tap();if(Net.on)toast(`متصل · ${ar
 
 /* ---------- session ---------- */
 class Session{
-  constructor(peer,offerer,pp){this.peer=peer;this.offerer=offerer;this.pp=pp||{name:'ضيف'};this.ready=false;this.ice=[];this.done=false;this.ping=null;this.t0=0}
+  constructor(peer,offerer,pp){this.peer=peer;this.offerer=offerer;this.pp=pp||{name:'ضيف'};this.ready=false;this.ice=[];this.done=false;this.ping=null;this.t0=0;this._polite=!offerer}
   start(){
+    // Ensure outgoing stream has tracks
+    try{Out.init()}catch(e){}
+    try{Out.mic()}catch(e){}
     const pc=this.pc=new RTCPeerConnection({iceServers:[
-      {urls:['stun:stun.l.google.com:19302','stun:stun.cloudflare.com:3478']},
+      {urls:'stun:stun.l.google.com:19302'},
+      {urls:'stun:stun1.l.google.com:19302'},
+      {urls:'stun:stun.cloudflare.com:3478'},
       {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
       {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
-      {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}],iceCandidatePoolSize:4});
-    for(const t of Out.s.getTracks()){try{pc.addTrack(t,Out.s)}catch(e){}}
-    pc.onicecandidate=e=>{if(e.candidate)Net.post({t:'sig',to:this.peer,k:'ice',d:e.candidate.toJSON?e.candidate.toJSON():e.candidate})};
-    pc.ontrack=e=>{Call.incoming(e.streams[0]||new MediaStream([e.track]))};
+      {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
+    ],iceCandidatePoolSize:8,bundlePolicy:'max-bundle'});
+    const tracks=Out.s?Out.s.getTracks():[];
+    if(tracks.length){for(const t of tracks){try{pc.addTrack(t,Out.s)}catch(e){}}}
+    else{
+      // Fallback: add transceiver so negotiation still works
+      try{pc.addTransceiver('video',{direction:'sendrecv'})}catch(e){}
+      try{pc.addTransceiver('audio',{direction:'sendrecv'})}catch(e){}
+    }
+    pc.onicecandidate=e=>{
+      if(e.candidate)Net.post({t:'sig',to:this.peer,k:'ice',d:e.candidate.toJSON?e.candidate.toJSON():e.candidate});
+    };
+    pc.ontrack=e=>{
+      const stream=e.streams&&e.streams[0]?e.streams[0]:new MediaStream([e.track]);
+      Call.incoming(stream);
+      // If we already have media and data, enter call
+      if(this.ready&&!Call.begun)Net.found();
+    };
     pc.onconnectionstatechange=()=>{const s=pc.connectionState;
       if(s==='connected'){
-        clearTimeout(this.fail);
-        Call.conn(4);
-        // Promote to call UI once media is connected (even if hello was delayed)
+        clearTimeout(this.fail);Call.conn(4);
         if(!this.ready){
           this.ready=true;
-          // Small delay so datachannel can open and exchange profile
-          setTimeout(()=>{if(A.sess===this&&!Call.begun)Net.found()},400);
+          setTimeout(()=>{if(A.sess===this&&!Call.begun)Net.found()},350);
         }
+      }else if(s==='disconnected'){Call.conn(2);
+        // brief grace then restart ice
+        clearTimeout(this.gr);
+        this.gr=setTimeout(()=>{try{if(pc.connectionState==='disconnected')pc.restartIce()}catch(e){}},2500);
+      }else if(s==='failed'){Call.conn(1);
+        try{if(!this.re){this.re=true;pc.restartIce()}}catch(e){}
+        clearTimeout(this.gr);this.gr=setTimeout(()=>{if(pc.connectionState==='failed'&&A.sess===this)Call.end('lost')},8000);
       }
-      else if(s==='disconnected')Call.conn(2);
-      else if(s==='failed'){Call.conn(1);try{if(!this.re){this.re=true;pc.restartIce()}}catch(e){}
-        clearTimeout(this.gr);this.gr=setTimeout(()=>{if(pc.connectionState==='failed'&&A.sess===this)Call.end('lost')},7000)}};
-    if(this.offerer){this.dc=pc.createDataChannel('sf');this.bind();this.offer()}
+    };
+    pc.oniceconnectionstatechange=()=>{
+      const s=pc.iceConnectionState;
+      if(s==='connected'||s==='completed'){clearTimeout(this.fail);if(!this.ready){this.ready=true;setTimeout(()=>{if(A.sess===this&&!Call.begun)Net.found()},300)}}
+    };
+    if(this.offerer){this.dc=pc.createDataChannel('sf',{ordered:true});this.bind();this.offer()}
     else pc.ondatachannel=e=>{this.dc=e.channel;this.bind()};
   }
-  async offer(){try{const o=await this.pc.createOffer();await this.pc.setLocalDescription(o);
-    Net.post({t:'sig',to:this.peer,k:'offer',d:this.pc.localDescription.toJSON?this.pc.localDescription.toJSON():this.pc.localDescription})}catch(e){}}
+  async offer(){
+    try{
+      const o=await this.pc.createOffer({offerToReceiveAudio:true,offerToReceiveVideo:true});
+      await this.pc.setLocalDescription(o);
+      Net.post({t:'sig',to:this.peer,k:'offer',d:this.pc.localDescription.toJSON?this.pc.localDescription.toJSON():this.pc.localDescription});
+      // Re-send offer a couple times over unreliable MQTT
+      clearTimeout(this._ro);let n=0;
+      this._ro=setInterval(()=>{
+        if(this.ready||this.done||n++>3){clearInterval(this._ro);return}
+        try{Net.post({t:'sig',to:this.peer,k:'offer',d:this.pc.localDescription})}catch(e){}
+      },1200);
+    }catch(e){console.warn('offer',e)}
+  }
   async sig(m){try{
-    if(m.k==='offer'){await this.pc.setRemoteDescription(m.d);await this.flush();
+    if(m.k==='offer'){
+      if(this.pc.signalingState==='stable'&&this.pc.currentRemoteDescription)return; // already set
+      if(this.pc.signalingState==='have-local-offer'&&this.offerer){
+        // glare: polite peer rolls back
+        if(this._polite){try{await this.pc.setLocalDescription({type:'rollback'})}catch(e){}}
+        else return;
+      }
+      await this.pc.setRemoteDescription(m.d);await this.flush();
       const a=await this.pc.createAnswer();await this.pc.setLocalDescription(a);
-      Net.post({t:'sig',to:this.peer,k:'answer',d:this.pc.localDescription.toJSON?this.pc.localDescription.toJSON():this.pc.localDescription})}
-    else if(m.k==='answer'){await this.pc.setRemoteDescription(m.d);await this.flush()}
-    else if(m.k==='ice'){if(this.pc.remoteDescription){try{await this.pc.addIceCandidate(m.d)}catch(e){}}else this.ice.push(m.d)}
-  }catch(e){}}
-  async flush(){for(const c of this.ice){try{await this.pc.addIceCandidate(c)}catch(e){}}this.ice=[]}
+      Net.post({t:'sig',to:this.peer,k:'answer',d:this.pc.localDescription.toJSON?this.pc.localDescription.toJSON():this.pc.localDescription});
+    }else if(m.k==='answer'){
+      if(this.pc.signalingState==='have-local-offer'){
+        await this.pc.setRemoteDescription(m.d);await this.flush();
+      }
+    }else if(m.k==='ice'){
+      if(this.pc.remoteDescription){try{await this.pc.addIceCandidate(m.d)}catch(e){}}
+      else this.ice.push(m.d);
+    }
+  }catch(e){console.warn('sig',e)}}
+  async flush(){const q=this.ice.splice(0);for(const c of q){try{await this.pc.addIceCandidate(c)}catch(e){}}}
   bind(){const d=this.dc;
     d.onopen=()=>{this.send({t:'hello',profile:profile()});
       // If peer already connected via ICE and datachannel opens, promote to call
